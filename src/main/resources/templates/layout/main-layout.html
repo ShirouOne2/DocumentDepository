@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="document(pageTitle, content, modalContent)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Dynamic Title -->
+    <title th:text="${pageTitle} ?: 'DocDepository App'">DocDepository App</title>
+
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css">
+    <link th:href="@{/css/sidebar/sidebar-layout.css}" rel="stylesheet">
+</head>
+
+<body id="body-pd">
+
+    <div th:replace="~{fragments/header :: main-header}"></div>
+    <div th:replace="~{fragments/sidebar :: main-sidebar}"></div>
+
+    <div class="height-100 bg-light">
+        <div class="container-fluid py-4">
+
+            <!-- Dynamic Content -->
+            <div th:insert="${content}"></div>
+
+            <div th:replace="~{fragments/footer :: main-footer}"></div>
+        </div>
+    </div>
+
+    <div th:insert="${modalContent}"></div>
+    <script th:src="@{/js/sidebar/sidebar-toggle.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
+</body>
+</html>

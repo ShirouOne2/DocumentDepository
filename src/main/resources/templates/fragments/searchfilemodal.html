@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    </head>
+<body>
+    <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true" th:fragment="searchFileModalFragment">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="searchModalLabel"><i class="fas fa-search me-2"></i>Search Documents</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="searchDocumentForm">
+                        <div class="mb-3">
+                            <label for="searchQuery" class="form-label">Search by Title or Keyword</label>
+                            <input type="text" class="form-control" id="searchQuery" placeholder="Enter keywords to search">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('searchDocumentForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const searchQuery = document.getElementById('searchQuery').value;
+            Swal.fire({
+                icon: 'info',
+                title: 'Searching...',
+                text: 'Searching for: "' + searchQuery + '"',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                // Here you would typically make an AJAX call to your search endpoint
+                // and then display results, perhaps in a table on the dashboard or another modal.
+                console.log("Simulating search for:", searchQuery);
+                const bootstrapModal = bootstrap.Modal.getInstance(document.getElementById('searchModal'));
+                if (bootstrapModal) {
+                    bootstrapModal.hide();
+                }
+                // For now, let's just show a success message after the simulated search
+                Swal.fire('Search Complete!', `Found results for "${searchQuery}" (simulated).`, 'success');
+            });
+        });
+    </script>
+</body>
+</html>

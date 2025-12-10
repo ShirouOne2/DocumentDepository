@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <footer th:fragment="main-footer" class="fixed-app-footer text-center py-3 border-top text-muted small">
+        &copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2025</span> Document Depository | Version 1.0
+    </footer>
+
+</body>
+</html>

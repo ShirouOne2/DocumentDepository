@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout/main-layout :: document('Dashboard Overview', ~{::content})">
+
+<!-- Page Content -->
+<div th:fragment="content">
+    <div>
+        <h4>Dashboard Overview</h4>
+        <p>Welcome to your Document Depository dashboard. Here you can manage your files.</p>
+    
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div>
+                            <p class="card-title-text">Total Uploads</p>
+                            <h5 class="card-title">2</h5>
+                        </div>
+                        <div class="card-icon"><i class="bx bx-data"></i></div>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="col-md-4">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div>
+                            <p class="card-title-text">Documents Today</p>
+                            <h5 class="card-title">25</h5>
+                        </div>
+                        <div class="card-icon"><i class="bx bx-file"></i></div>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="col-md-4">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <div>
+                            <p class="card-title-text">Pending Reviews</p>
+                            <h5 class="card-title">3</h5>
+                        </div>
+                        <div class="card-icon"><i class="bx bx-time-five"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="card-title-text">Recent Activity</p>
+    
+                        <div class="activity-content">
+                            <p>Display recent uploads, downloads, or system notifications here.</p>
+                            <ul>
+                                <li>Uploaded "Project_Report_v2.pdf" by John Doe - 2 hours ago</li>
+                                <li>Downloaded "Client_Contract.docx" by Jane Smith - yesterday</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+</html>

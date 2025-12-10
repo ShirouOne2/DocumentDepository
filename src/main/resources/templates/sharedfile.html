@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout/main-layout :: document('Shared Files', ~{::content})">
+
+<div th:fragment="content">
+
+    <h4>Shared Files</h4>
+    <p>This section shows documents that have been shared with you by other users.</p>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Shared Document List</h5>
+            <p>A table of documents shared by others will be displayed here.</p>
+        </div>
+    </div>
+
+</div>
+
+</html>

@@ -1,0 +1,17 @@
+<div th:replace="~{layout/main-layout :: content(
+    ~{::page-content}, 
+    'Account Settings'
+)}">
+
+<div th:fragment="page-content">
+    <h4>Account Settings</h4>
+    <p>Manage your profile, preferences, and security settings here.</p>
+    
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">General Preferences</h5>
+            <p>Forms for changing password, email, and display theme will be placed here.</p>
+        </div>
+    </div>
+</div>
+</div>

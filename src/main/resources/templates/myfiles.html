@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+th:replace="~{layout/main-layout :: document('My Uploaded Documents', ~{::content}, ~{::modal-content})}">
+
+    <div th:fragment="content">
+
+        <div id="content-my-files">
+            <h2 class="mb-3"><i class="fas fa-folder me-2"></i>My Uploaded Files</h2>
+            <p class="text-muted mb-4">A complete list of documents you have uploaded to the depository.</p>
+            
+            <div class="card">
+                <div class="card-body p-4">
+
+                    <div class="row mb-4 align-items-center">
+                        <div th:replace="fragments/uploadformmodal :: uploadFormModalFragment"></div>
+                        <div class="col-md-3"> 
+                            <div class="d-grid">
+                                <button type="button" 
+                                        class="btn btn-primary shadow-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#uploadModal" 
+                                        title="Upload New Document"
+                                        style="border-radius: 0.25rem;"> 
+                                    <i class="fas fa-plus-circle me-1"></i> New File
+                                </button>
+                            </div>
+                        </div>
+                    
+                        <div class="col-md-9">
+                            <form class="d-flex" role="search" th:action="@{/myfiles/search}" method="get">
+                                <input class="form-control me-2" type="search" placeholder="Search files..."
+                                    aria-label="Search" name="query"> 
+                                
+                                <button class="btn btn-outline-primary" type="submit">
+                                    <i class="fas fa-search me-1"></i>Search
+                                </button>
+                            </form>
+                        </div>
+                        
+                    </div>
+
+                    <div th:if="${not #lists.isEmpty(documents)}">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                
+                                <thead class="bg-light">
+                                    <tr> 
+                                        <th scope="col">#</th>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Type</th> 
+                                        <th scope="col">Upload Date</th>
+                                        <th scope="col" class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                
+                                <tbody>
+                                    <tr th:each="doc, i : ${documents}">
+                                        <th scope="row" th:text="${i.index + 1}"></th>
+                                        <td th:text="${doc.title}"></td>
+                                        <td class="text-truncate" style="max-width: 250px;" th:text="${doc.description}"></td>
+                                        
+                                        <td th:text="${doc.classId}"></td> 
+                                        
+                                        <td th:text="${doc.dateCreated}"></td>
+                                        
+                                        <td class="text-center">
+                                            <a th:href="@{/download/{id}(id=${doc.id})}"
+                                            class="btn btn-sm btn-outline-success me-2" title="Download File">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-danger btn-delete"
+                                                    th:data-file-id="${doc.id}" title="Delete File">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(documents)}"
+                        class="alert alert-info text-center mt-4">
+                        <i class="fas fa-info-circle me-2"></i>You have not uploaded any documents yet.
+                    </div>
+
+                </div>
+            </div>
+
+            
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    
+                    // =========================================================
+                    // 1. DELETE CONFIRMATION LOGIC (Your Existing Code)
+                    // =========================================================
+                    document.querySelectorAll('.btn-delete').forEach(button => {
+                        button.addEventListener('click', function () {
+                            const fileId = this.getAttribute('data-file-id');
+
+                            Swal.fire({
+                                title: 'Are you sure?',
+                                text: "You won't be able to revert this file!",
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#d33',
+                                cancelButtonColor: '#6c757d',
+                                confirmButtonText: 'Yes, delete it!'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Redirects to the Spring Boot endpoint to perform the delete
+                                    window.location.href = '/delete/' + fileId;
+                                }
+                            });
+                        });
+                    });
+
+                    // =========================================================
+                    // 2. UPLOAD MODAL LOGIC (New Code)
+                    // =========================================================
+                    
+                    // A. Set today's date in the read-only field
+                    const today = new Date();
+                    const yyyy = today.getFullYear();
+                    const mm = String(today.getMonth() + 1).padStart(2, '0');
+                    const dd = String(today.getDate()).padStart(2, '0');
+                    const formattedDate = `${yyyy}-${mm}-${dd}`;
+                    
+                    const dateCreatedElement = document.getElementById('dateCreated');
+                    if (dateCreatedElement) {
+                        dateCreatedElement.value = formattedDate;
+                    }
+
+                    // B. Handle AJAX Form Submission
+                    const uploadForm = document.getElementById('uploadDocumentForm');
+
+                    if (uploadForm) {
+                        uploadForm.addEventListener('submit', function(event) {
+                            event.preventDefault();
+
+                            const form = event.target;
+                            const formData = new FormData(form);
+                            const submitButton = form.querySelector('button[type="submit"]');
+                            
+                            // Disable button and update text/spinner
+                            submitButton.disabled = true;
+                            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Uploading...';
+
+                            fetch(form.action, {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    // Handle HTTP error responses
+                                    return response.text().then(text => { throw new Error(text) });
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Upload Successful!',
+                                    text: data.message || 'Your document has been uploaded and saved.',
+                                    timer: 2000,
+                                    timerProgressBar: true,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    form.reset();
+                                    // Hide the modal
+                                    const bootstrapModal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
+                                    if (bootstrapModal) {
+                                        bootstrapModal.hide();
+                                    }
+                                    // Reload the page to display the new file in the table
+                                    window.location.reload(); 
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Upload error:', error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Upload Failed!',
+                                    text: error.message || 'There was an error uploading your document. Please try again.',
+                                    confirmButtonText: 'OK'
+                                });
+                            })
+                            .finally(() => {
+                                // Re-enable button on completion
+                                submitButton.disabled = false;
+                                // Reset button text (make sure this matches the original text from your modal HTML)
+                                submitButton.innerHTML = 'Upload Document'; 
+                            });
+                        });
+                    }
+                    // =========================================================
+                });
+            </script>
+
+        </div>
+        <div th:fragment="modal-content">
+            <div th:replace="fragments/uploadformmodal :: uploadFormModalFragment"></div>
+        </div>
+
+    </div>
+    
+</html>
