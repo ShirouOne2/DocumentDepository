@@ -1,7 +1,7 @@
 package com.docsdepository.demo.Controller.FileController;
 
+import com.docsdepository.demo.Controller.DTO.UploadForm;
 import com.docsdepository.demo.Entity.ImportableInformation;
-import com.docsdepository.demo.Entity.UploadForm;
 import com.docsdepository.demo.Repository.ImportableInformationRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,7 +26,7 @@ public class FileController {
         
         // This log is CRUCIAL for debugging!
         System.out.println("DEBUG: Files Retrieved from DB: " + documents.size()); 
-        
+        model.addAttribute("activePage", "files");
         model.addAttribute("documents", documents); // The list name must be 'documents'
         model.addAttribute("uploadForm", new UploadForm());
         return "myfiles";

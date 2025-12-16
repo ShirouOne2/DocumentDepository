@@ -1,34 +1,40 @@
-package com.docsdepository.demo.Controller.DashboardController; // Adjust package as necessary
+package com.docsdepository.demo.Controller.DashboardController;
 
-import com.docsdepository.demo.Entity.UploadForm;
-import com.docsdepository.demo.Repository.UploadFormRepository;
+import com.docsdepository.demo.Repository.ImportableInformationRepository; // Optional DTO for Thymeleaf form
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.time.LocalDate;
+
 @Controller
 public class DashboardController {
 
-    private final UploadFormRepository uploadFormRepository;
-    
-    // Inject the Repository to get statistics (like total count)
+    private final ImportableInformationRepository importableInformationRepository;
+
     @Autowired
-    public DashboardController(UploadFormRepository uploadFormRepository) {
-        this.uploadFormRepository = uploadFormRepository;
+    public DashboardController(ImportableInformationRepository importableInformationRepository) {
+        this.importableInformationRepository = importableInformationRepository;
     }
 
     @GetMapping({"/", "/dashboard"})
     public String showDashboard(Model model) {
-        
-        // ... (Your model attribute setup here) ...
-        model.addAttribute("pageTitle", "Dashboard - File Management"); 
-        model.addAttribute("uploadForm", new UploadForm()); 
-        model.addAttribute("totalUploads", uploadFormRepository.count());
-        
-        // The return value "dashboard" tells Spring to render dashboard.html
-        return "dashboard"; 
+
+        // 1️⃣ Total uploads overall
+        long totalUploads = importableInformationRepository.count();
+
+        // 2️⃣ Total uploads today
+        LocalDate today = LocalDate.now();
+        long uploadsToday = importableInformationRepository.countUploadsToday(today);
+
+        // 3️⃣ Pass data to Thymeleaf
+        model.addAttribute("activePage", "dashboard");
+        model.addAttribute("pageTitle", "Dashboard - File Management");
+        model.addAttribute("totalUploads", totalUploads);
+        model.addAttribute("uploadsToday", uploadsToday);
+
+        return "dashboard";
     }
-    
-    // You can add other dashboard-related GET mappings here later (e.g., /dashboard/reports)
 }

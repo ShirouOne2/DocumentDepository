@@ -1,17 +1,108 @@
-<div th:replace="~{layout/main-layout :: content(
-    ~{::page-content}, 
-    'Account Settings'
-)}">
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout/main-layout :: document('Settings', ~{::content})">
 
-<div th:fragment="page-content">
-    <h4>Account Settings</h4>
-    <p>Manage your profile, preferences, and security settings here.</p>
-    
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">General Preferences</h5>
-            <p>Forms for changing password, email, and display theme will be placed here.</p>
+<div th:fragment="content">
+    <div>
+
+        <!-- Page Title -->
+        <h2 class="page-title">Account Settings</h2>
+        <p>View your account information and update your password.</p>
+
+        <div class="row mt-4">
+
+            <!-- Account Information -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+
+                        <p class="card-title-text">Account Information</p>
+
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control"
+                                   th:value="${user.username}" disabled>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Position</label>
+                            <input type="text" class="form-control"
+                                   th:value="${user.position}" disabled>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Department</label>
+                            <input type="text" class="form-control"
+                                   th:value="${user.department}" disabled>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Office</label>
+                            <input type="text" class="form-control"
+                                   th:value="${user.office}" disabled>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change Password -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+
+                        <p class="card-title-text">Change Password</p>
+
+                        <form th:action="@{/settings/password}" method="post">
+
+                            <div class="mb-3">
+                                <label class="form-label">Current Password</label>
+                                <input type="password"
+                                       class="form-control"
+                                       name="currentPassword"
+                                       required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">New Password</label>
+                                <input type="password"
+                                       class="form-control"
+                                       name="newPassword"
+                                       required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Confirm New Password</label>
+                                <input type="password"
+                                       class="form-control"
+                                       name="confirmPassword"
+                                       required>
+                            </div>
+
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                Update Password
+                            </button>
+
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
+
+        <!-- Admin Notice -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="alert alert-info mb-0">
+                    <strong>Note:</strong>
+                    Position, department, office, and username changes must be
+                    requested through the system administrator.
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
-</div>
+
+</html>

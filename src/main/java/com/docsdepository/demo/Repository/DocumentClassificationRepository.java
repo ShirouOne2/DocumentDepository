@@ -1,12 +1,11 @@
 package com.docsdepository.demo.Repository;
 
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.docsdepository.demo.Entity.UploadForm;
+
+import com.docsdepository.demo.Entity.DocumentClassification;
 
 @Repository
-public interface UploadFormRepository extends JpaRepository<UploadForm, Long> {
-    
-    
+public interface DocumentClassificationRepository extends JpaRepository<DocumentClassification,Long> {
+
 }

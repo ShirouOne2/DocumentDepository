@@ -1,56 +1,114 @@
 package com.docsdepository.demo.Entity; 
 
 import jakarta.persistence.*;
-import java.util.Date; 
-import org.hibernate.annotations.DynamicUpdate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "importables_information") // Matches the table name
-@DynamicUpdate
+@Table(name = "importable_information")
 public class ImportableInformation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "document_id") // CRITICAL: Must match the ID column name
-    private Long id; 
+    @Column(name = "document_id")
+    private Long id;
 
-    @Column(name = "document_classification_id") 
-    private Integer classId; 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "document_classification_id", nullable = false)
+    private DocumentClassification documentClassification;
 
-    @Column(name = "title") 
+    @Column(nullable = false)
     private String title;
 
-    @Column(name = "description") 
+    @Column
     private String description;
 
-    @Column(name = "filename") 
+    @Column(nullable = false)
     private String filename;
 
-    // Assuming this column is the upload date/timestamp
-    @Column(name = "date_created") 
-    private String dateCreated; 
+    @Column(name = "date_created", updatable = false)
+    private LocalDateTime dateCreated;
 
-    // --- Constructors, Getters, and Setters (using camelCase) ---
+    @Column(name = "upload_date")
+    private LocalDateTime uploadDate;
 
-    public ImportableInformation() {}
+    // ✅ NEW FIELDS
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "uploaded_by")
+    private Users uploadedBy;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    
-    // ... all other getters and setters using classId, title, etc. ...
-    
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    
-    public String getDateCreated() { return dateCreated; }
-    public void setDateCreated(String dateCreated) { this.dateCreated = dateCreated; }
-    
-    public Integer getClassId() { return classId; }
-    public void setClassId(Integer classId) { this.classId = classId; }
-    
-    public String getFilename() { return filename; }
-    public void setFilename(String filename) { this.filename = filename; }
+    @Column(name = "intended_viewer_group")
+    private String intendedViewerGroup;
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public DocumentClassification getDocumentClassification() {
+        return documentClassification;
+    }
+
+    public void setDocumentClassification(DocumentClassification documentClassification) {
+        this.documentClassification = documentClassification;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    public LocalDateTime getDateCreated() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(LocalDateTime dateCreated) {
+        this.dateCreated = dateCreated;
+    }
+
+    public LocalDateTime getUploadDate() {
+        return uploadDate;
+    }
+
+    public void setUploadDate(LocalDateTime uploadDate) {
+        this.uploadDate = uploadDate;
+    }
+
+    public Users getUploadedBy() {
+        return uploadedBy;
+    }
+
+    public void setUploadedBy(Users uploadedBy) {
+        this.uploadedBy = uploadedBy;
+    }
+
+    public String getIntendedViewerGroup() {
+        return intendedViewerGroup;
+    }
+
+    public void setIntendedViewerGroup(String intendedViewerGroup) {
+        this.intendedViewerGroup = intendedViewerGroup;
+    }
 }

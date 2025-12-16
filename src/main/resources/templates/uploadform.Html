@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main-layout :: document('Upload New Document', ~{::content})}">
+
+<div th:fragment="content">
+    <style>
+        .form-container {
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            background-color: white;
+        }
+
+        .page-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+        }
+
+        .page-header h4 {
+            color: white;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .page-header i {
+            color: white;
+        }
+        
+        .page-body {
+            padding: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #E8392F;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #fcebea;
+        }
+
+        .form-control[type="file"] {
+            height: 120px;
+            padding: 1.5rem;
+            border: 2px dashed rgba(232, 57, 47, 0.35);
+            background-color: #fdf5f5;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .form-control[type="file"]::before {
+            content: "📁 Click to browse or drag file here";
+            display: block;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .form-control[type="file"]:hover {
+            border-color: #E8392F;
+            background-color: #fcebea;
+        }
+        
+        .btn-primary {
+            background-color: #E8392F;
+            border-color: #E8392F;
+            padding: 0.65rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #cf2f27;
+            border-color: #cf2f27;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(232, 57, 47, 0.3);
+        }
+
+        .form-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid #dee2e6;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #E8392F;
+            box-shadow: 0 0 0 0.2rem rgba(232, 57, 47, 0.15);
+        }
+
+        .info-badge {
+            display: inline-block;
+            background-color: #fcebea;
+            color: #E8392F;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .readonly-field {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+    </style>
+
+    <div class="form-container">
+        
+        <div class="page-header">
+            <h4><i class="fas fa-cloud-upload-alt me-2"></i>Upload New Document</h4>
+        </div>
+        
+        <div class="page-body">
+            <form id="uploadDocumentForm" th:action="@{/save}" th:object="${uploadForm}" method="post" enctype="multipart/form-data">
+                
+                <!-- DOCUMENT INFORMATION SECTION -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-file-alt me-2"></i>Document Information
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="classificationId" class="form-label">Document Classification *</label>
+                            <select class="form-select" id="classificationId" th:field="*{documentClassificationId}" required>
+                                <option value="">-- Select Document Type --</option>
+                                <option th:each="classification : ${classifications}" 
+                                        th:value="${classification.id}" 
+                                        th:text="${classification.documentName}">
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="title" class="form-label">Document Title *</label>
+                            <input type="text" class="form-control" id="title" th:field="*{title}" 
+                                   placeholder="Enter document title" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" th:field="*{description}" rows="3" 
+                                      placeholder="Provide a brief description of the document..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FILE UPLOAD SECTION -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-upload me-2"></i>File Upload
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="file" class="form-label">Select File *</label>
+                            <input type="file" class="form-control" id="file" name="file" 
+                                   accept=".pdf,.doc,.docx,.xlsx,.xls,.txt,.jpg,.png" required>
+                            <small class="text-muted">Supported formats: PDF, Word, Excel, Text, Images (Max 10MB)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- METADATA SECTION -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-info-circle me-2"></i>Document Metadata
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="dateCreated" class="form-label">Date Created</label>
+                            <input type="text" class="form-control readonly-field" id="dateCreated" 
+                                   th:field="*{dateCreated}" readonly>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="uploadedBy" class="form-label">Uploaded By</label>
+                            <input type="text" class="form-control readonly-field" id="uploadedBy" 
+                                   th:value="${currentUser != null ? currentUser.username : 'Unknown'}" readonly>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="intendedViewerGroup" class="form-label">Intended Viewer Group *</label>
+                            <select class="form-select" id="intendedViewerGroup" th:field="*{intendedViewerGroup}" required>
+                                <option value="">-- Select Group --</option>
+                                <option value="PUBLIC">Public (All Users)</option>
+                                <option value="DEPARTMENT">Department Only</option>
+                                <option value="MANAGEMENT">Management Only</option>
+                                <option value="ADMIN">Administrators Only</option>
+                                <option value="CUSTOM">Custom Group</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUBMIT BUTTON -->
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-cloud-upload-alt me-2"></i>Upload Document
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Set today's date
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const formattedDate = `${yyyy}-${mm}-${dd}`;
+            
+            const dateInput = document.getElementById('dateCreated');
+            if (dateInput) {
+                dateInput.value = formattedDate;
+            }
+
+            // File input custom text
+            const fileInput = document.getElementById('file');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const fileName = e.target.files[0]?.name || 'No file selected';
+                    console.log('Selected file:', fileName);
+                });
+            }
+    
+            // Form submission
+            const form = document.getElementById('uploadDocumentForm');
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const formData = new FormData(form);
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
+    
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json()
+                                .catch(() => ({ message: 'Server error', status: 'error' }))
+                                .then(data => { throw new Error(data.message); });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'error') {
+                            throw new Error(data.message);
+                        }
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Upload Successful!',
+                            text: data.message || 'Your document has been uploaded successfully.',
+                            confirmButtonColor: '#E8392F',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = data.redirectUrl || '/files';
+                        });
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Upload Failed!',
+                            text: error.message || 'An error occurred while uploading.',
+                            confirmButtonColor: '#E8392F'
+                        });
+                    })
+                    .finally(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt me-2"></i>Upload Document';
+                    });
+                });
+            }
+        });
+    </script>
+</div>
+
+</html>

@@ -1,36 +1,47 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="document(pageTitle, content, modalContent)">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" 
+      th:fragment="document(pageTitle, content)">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Dynamic Title -->
     <title th:text="${pageTitle} ?: 'DocDepository App'">DocDepository App</title>
 
+    <!-- Icons -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous" />
+    
+    <!-- ✅ BOOTSTRAP FIRST -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- ✅ SWEETALERT CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css">
+    
+    <!-- ✅ YOUR CUSTOM CSS LAST (This will override Bootstrap) -->
     <link th:href="@{/css/sidebar/sidebar-layout.css}" rel="stylesheet">
+    
 </head>
 
 <body id="body-pd">
 
+    <!-- Header Fragment -->
     <div th:replace="~{fragments/header :: main-header}"></div>
+
+    <!-- Sidebar Fragment -->
     <div th:replace="~{fragments/sidebar :: main-sidebar}"></div>
 
-    <div class="height-100 bg-light">
-        <div class="container-fluid py-4">
+    <!-- Main Content -->
+    <main class="main-content container-fluid py-4">
+        <div th:insert="${content}"></div>
+    </main>
 
-            <!-- Dynamic Content -->
-            <div th:insert="${content}"></div>
+    <!-- Footer Fragment -->
+    <div th:replace="~{fragments/footer :: main-footer}"></div>
 
-            <div th:replace="~{fragments/footer :: main-footer}"></div>
-        </div>
-    </div>
-
-    <div th:insert="${modalContent}"></div>
+    <!-- ✅ SCRIPTS AT THE BOTTOM -->
     <script th:src="@{/js/sidebar/sidebar-toggle.js}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
+
 </body>
 </html>
