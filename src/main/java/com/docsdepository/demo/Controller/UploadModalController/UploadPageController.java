@@ -3,9 +3,11 @@ package com.docsdepository.demo.Controller.UploadModalController;
 import com.docsdepository.demo.Controller.DTO.UploadForm;
 import com.docsdepository.demo.Entity.DocumentClassification;
 import com.docsdepository.demo.Entity.ImportableInformation;
+import com.docsdepository.demo.Entity.IntendedViewerGroup;
 import com.docsdepository.demo.Entity.Users;
 import com.docsdepository.demo.Repository.DocumentClassificationRepository;
 import com.docsdepository.demo.Repository.ImportableInformationRepository;
+import com.docsdepository.demo.Repository.IntendedViewerGroupRepository;
 import com.docsdepository.demo.Repository.UsersRepository;
 import com.docsdepository.demo.Services.FileStorageService.FileStorageService;
 
@@ -34,6 +36,9 @@ public class UploadPageController {
     private final DocumentClassificationRepository documentClassificationRepository;
     private final UsersRepository usersRepository;
     private final FileStorageService fileStorageService;
+    
+    @Autowired
+    private IntendedViewerGroupRepository intendedViewerGroupRepository;
 
     @Autowired
     public UploadPageController(
@@ -48,19 +53,28 @@ public class UploadPageController {
         this.fileStorageService = fileStorageService;
     }
     
-
     @GetMapping("/uploadpage")
     public String getUploadform(Model model, HttpSession session) {
-        // Get logged-in user
-        Users currentUser = (Users) session.getAttribute("user");
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/Userlogin";
+        }
+
+        Users currentUser = usersRepository.findByIdWithOfficeHierarchy(userId);
+        if (currentUser == null) {
+            session.invalidate();
+            return "redirect:/Userlogin";
+        }
         
-        // Fetch all classifications
         List<DocumentClassification> classifications = documentClassificationRepository.findAll();
         
         model.addAttribute("uploadForm", new UploadForm());
         model.addAttribute("classifications", classifications);
+        model.addAttribute("viewerGroups", intendedViewerGroupRepository.findAll());
         model.addAttribute("currentUser", currentUser);
         model.addAttribute("activePage", "upload");
+        model.addAttribute("systemUploadDate", LocalDateTime.now());
+
         return "uploadform";
     }
 
@@ -74,45 +88,107 @@ public class UploadPageController {
         Map<String, String> response = new HashMap<>();
 
         try {
-            // Get current user from session
-            Users currentUser = (Users) session.getAttribute("user");
-            if (currentUser == null) {
+            Integer userId = (Integer) session.getAttribute("userId");
+            if (userId == null) {
                 response.put("status", "error");
                 response.put("message", "User not logged in");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
 
-            // 1. Save file
+            Users currentUser = usersRepository.findByIdWithOfficeHierarchy(userId);
+            if (currentUser == null) {
+                response.put("status", "error");
+                response.put("message", "User not found");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+            if (file.isEmpty()) {
+                response.put("status", "error");
+                response.put("message", "No file selected");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            String contentType = file.getContentType();
+            
+            List<String> allowedTypes = List.of(
+                    "application/pdf",
+                    "application/msword",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "text/plain",
+                    "image/jpeg",
+                    "image/png"
+            );
+            
+            if (contentType == null || !allowedTypes.contains(contentType)) {
+                response.put("status", "error");
+                response.put("message", "Unsupported file type");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            String originalFilename = file.getOriginalFilename();
+
+            if (originalFilename == null || !originalFilename.contains(".")) {
+                response.put("status", "error");
+                response.put("message", "Invalid file name");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            String extension = originalFilename
+                    .substring(originalFilename.lastIndexOf('.') + 1)
+                    .toLowerCase();
+
+            List<String> allowedExtensions = List.of(
+                    "pdf", "doc", "docx", "xls", "xlsx", "txt", "jpg", "jpeg", "png"
+            );
+
+            if (!allowedExtensions.contains(extension)) {
+                response.put("status", "error");
+                response.put("message", "Invalid file extension");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            long maxSize = 10 * 1024 * 1024; // 10MB
+
+            if (file.getSize() > maxSize) {
+                response.put("status", "error");
+                response.put("message", "File size exceeds 10MB limit");
+                return ResponseEntity.badRequest().body(response);
+            }
+
             String finalFileName = fileStorageService.saveFile(file);
 
-            // 2. Resolve FK: document_classification
             DocumentClassification classification =
                     documentClassificationRepository
                             .findById(form.getDocumentClassificationId())
                             .orElseThrow(() -> new RuntimeException("Invalid classification"));
 
-            // 3. Build entity
             ImportableInformation info = new ImportableInformation();
             info.setDocumentClassification(classification);
             info.setTitle(form.getTitle());
             info.setDescription(form.getDescription());
             info.setFilename(finalFileName);
-            info.setUploadDate(LocalDateTime.now());
-            info.setDateCreated(LocalDateTime.now());
-            info.setUploadedBy(currentUser); // ✅ Set the uploader
-            info.setIntendedViewerGroup(form.getIntendedViewerGroup()); // ✅ Set viewer group
+            info.setDateCreated(form.getDateCreated().atStartOfDay()); // Convert LocalDate to LocalDateTime
+            info.setUploadDate(LocalDateTime.now()); // NEW LINE - system upload timestamp
+            info.setUploadedBy(currentUser);
+            
+            IntendedViewerGroup viewerGroup = intendedViewerGroupRepository
+                .findById(form.getIntendedViewerGroup())
+                .orElseThrow(() -> new RuntimeException("Invalid viewer group"));
 
-            // 4. Save entity
+            info.setIntendedViewerGroup(viewerGroup);
+
             importableInformationRepository.save(info);
 
             response.put("status", "success");
             response.put("message", "Document uploaded successfully!");
-            response.put("redirectUrl", "/files");
+            response.put("redirectUrl", "/myfiles");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             response.put("status", "error");
-            response.put("message", e.getMessage());
+            response.put("message", "An unexpected error occurred while uploading the document.");
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }

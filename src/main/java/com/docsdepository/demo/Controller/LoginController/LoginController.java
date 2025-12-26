@@ -1,5 +1,6 @@
 package com.docsdepository.demo.Controller.LoginController;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,6 @@ import com.docsdepository.demo.Repository.UsersRepository;
 
 import jakarta.servlet.http.HttpSession;
 
-
 @Controller
 public class LoginController {
 
@@ -25,21 +25,30 @@ public class LoginController {
     @Autowired
     private UsersRepository usersRepository;
 
+    // Authentication check - call this from other controllers if needed
+    public Users getAuthenticatedUser(HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return null;
+        }
+        return usersRepository.findByIdWithOfficeHierarchy(userId);
+    }
 
     @GetMapping("/logout")
     public String loggingOut(HttpSession session) {
-        session.invalidate(); // clears the session
+        session.invalidate();
         return "redirect:/Userlogin?logout";
     }
 
     @GetMapping("/Userlogin")
-    public String loggingIn(HttpSession session) {
-        System.out.println("DEBUG: session user = " + session.getAttribute("user"));
-        if (session.getAttribute("user") != null) {
-            return "redirect:/";
+    public String loggingIn(HttpSession session, @RequestParam(required = false) String logout) {
+        // If already logged in, redirect to dashboard
+        if (session.getAttribute("userId") != null) {
+            return "redirect:/dashboard";
         }
         return "login";
     }
+
     @PostMapping("/login")
     public String loginUser(@RequestParam String username,
                             @RequestParam String password,
@@ -60,16 +69,18 @@ public class LoginController {
             return "login";
         }
 
-        session.setAttribute("user", user); // ✅ this is crucial
+        // Update last login
+        user.setLastLogin(LocalDateTime.now());
+        usersRepository.save(user);
 
-        return "redirect:/";
+        // Set session
+        session.setAttribute("userId", user.getUserId());
+
+        return "redirect:/dashboard";
     }
 
     @GetMapping("/access-denied")
     public String accessDenied() {
         return "access-denied";
     }
-
-    
-    
 }

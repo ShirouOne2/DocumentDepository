@@ -49,9 +49,8 @@ public class FileManagerController {
         }
     }
 
-    @GetMapping("/download/{id}")
-    public ResponseEntity<Resource> downloadFile(@PathVariable("id") Long documentId) {
-
+    @GetMapping("/downloadiii/{id}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable("id") Integer documentId) {
         try {
             Optional<ImportableInformation> document =
                     importableInformationRepository.findById(documentId);

@@ -1,21 +1,23 @@
 package com.docsdepository.demo.Controller.DTO;
 
+import java.time.LocalDate;
+
 public class UploadForm {
 
-    private Long documentClassificationId;
+    private Integer documentClassificationId;
     private String title;
     private String description;
-    private String dateCreated;
+    private LocalDate dateCreated; 
     private String filename;
     private Long uploadedBy; // User ID
-    private String intendedViewerGroup; // New field
+    private Integer intendedViewerGroup; 
 
     // Getters and setters
-    public Long getDocumentClassificationId() {
+    public Integer getDocumentClassificationId() {
         return documentClassificationId;
     }
 
-    public void setDocumentClassificationId(Long documentClassificationId) {
+    public void setDocumentClassificationId(Integer documentClassificationId) {
         this.documentClassificationId = documentClassificationId;
     }
 
@@ -35,11 +37,11 @@ public class UploadForm {
         this.description = description;
     }
 
-    public String getDateCreated() {
+    public LocalDate getDateCreated() {
         return dateCreated;
     }
-
-    public void setDateCreated(String dateCreated) {
+    
+    public void setDateCreated(LocalDate dateCreated) {
         this.dateCreated = dateCreated;
     }
 
@@ -59,11 +61,11 @@ public class UploadForm {
         this.uploadedBy = uploadedBy;
     }
 
-    public String getIntendedViewerGroup() {
+    public Integer getIntendedViewerGroup() {
         return intendedViewerGroup;
     }
-
-    public void setIntendedViewerGroup(String intendedViewerGroup) {
+    
+    public void setIntendedViewerGroup(Integer intendedViewerGroup) {
         this.intendedViewerGroup = intendedViewerGroup;
     }
 }

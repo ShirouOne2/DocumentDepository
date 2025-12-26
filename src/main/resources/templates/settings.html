@@ -3,106 +3,270 @@
       th:replace="layout/main-layout :: document('Settings', ~{::content})">
 
 <div th:fragment="content">
-    <div>
 
-        <!-- Page Title -->
-        <h2 class="page-title">Account Settings</h2>
-        <p>View your account information and update your password.</p>
+    <style>
+        /* === SETTINGS CONTAINER (MATCH DASHBOARD) === */
+        .settings-container {
+            border: 1px solid #e5e7eb;
+            background-color: #fff;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        }
+    
+        .settings-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            border-bottom: 1px solid #dee2e6;
+        }
+    
+        .settings-header h4,
+        .settings-header i {
+            margin: 0;
+            color: #fff;
+            font-weight: 700;
+        }
+    
+        .settings-body {
+            padding: 2rem;
+        }
+    
+        /* === INFO PANEL === */
+        .info-panel {
+            border: 1px solid #e5e7eb;
+            background-color: #fff;
+            padding: 1.5rem;
+        }
 
-        <div class="row mt-4">
+        .info-panel .form-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #6c757d;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.5rem;
+        }
 
-            <!-- Account Information -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
+        .info-panel .form-control:disabled {
+            background-color: #f8f9fa;
+            border-color: #e5e7eb;
+            color: #495057;
+        }
 
-                        <p class="card-title-text">Account Information</p>
+        /* === PASSWORD PANEL === */
+        .password-panel {
+            border: 1px solid #e5e7eb;
+            background-color: #fff;
+            padding: 1.5rem;
+        }
 
-                        <div class="mb-3">
+        .password-panel .form-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .password-panel .form-control {
+            border-color: #e5e7eb;
+        }
+
+        .password-panel .form-control:focus {
+            border-color: #E8392F;
+            box-shadow: 0 0 0 0.2rem rgba(232, 57, 47, 0.15);
+        }
+
+        /* === FORM SECTION === */
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #495057;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #E8392F;
+        }
+
+        /* === ALERT === */
+        .alert-info {
+            background-color: #e7f3ff;
+            border-color: #b3d9ff;
+            color: #004085;
+        }
+
+        /* === BUTTON === */
+        .btn-danger {
+            background-color: #E8392F;
+            border-color: #E8392F;
+        }
+
+        .btn-danger:hover {
+            background-color: #cf2f27;
+            border-color: #cf2f27;
+        }
+    </style>
+
+    <div class="settings-container">
+
+        <!-- HEADER -->
+        <div class="settings-header">
+            <h4><i class="fas fa-cog me-2"></i>Account Settings</h4>
+        </div>
+
+        <!-- BODY -->
+        <div class="settings-body">
+
+            <!-- ACCOUNT INFORMATION SECTION -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="fas fa-user me-2"></i>Account Information
+                </div>
+
+                <div class="info-panel">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Username</label>
                             <input type="text" class="form-control"
-                                   th:value="${user.username}" disabled>
+                                th:value="${user.username}" disabled>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Position</label>
                             <input type="text" class="form-control"
-                                   th:value="${user.position}" disabled>
+                                th:value="${user.jobPosition.name}" disabled>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Department</label>
                             <input type="text" class="form-control"
-                                   th:value="${user.department}" disabled>
+                              th:value="${user.office.department.name}" disabled>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Office</label>
+                            <input type="text" class="form-control"
+                                 th:value="${user.office.officeName}" disabled>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mb-0 mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong>
+                        Position, department, office, and username changes must be
+                        requested through the system administrator.
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHANGE PASSWORD SECTION -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="fas fa-key me-2"></i>Change Password
+                </div>
+
+                <div class="password-panel">
+                    <form id="changePasswordForm" th:action="@{/settings/password}" method="post">
+
+                        <div class="mb-3">
+                            <label class="form-label">Current Password</label>
+                            <input type="password"
+                                   class="form-control"
+                                   name="currentPassword"
+                                   placeholder="Enter your current password"
+                                   required>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Office</label>
-                            <input type="text" class="form-control"
-                                   th:value="${user.office}" disabled>
+                            <label class="form-label">New Password</label>
+                            <input type="password"
+                                   class="form-control"
+                                   name="newPassword"
+                                   placeholder="Enter your new password"
+                                   required>
                         </div>
 
-                    </div>
-                </div>
-            </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirm New Password</label>
+                            <input type="password"
+                                   class="form-control"
+                                   name="confirmPassword"
+                                   placeholder="Confirm your new password"
+                                   required>
+                        </div>
 
-            <!-- Change Password -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-lock me-2"></i>Update Password
+                        </button>
 
-                        <p class="card-title-text">Change Password</p>
-
-                        <form th:action="@{/settings/password}" method="post">
-
-                            <div class="mb-3">
-                                <label class="form-label">Current Password</label>
-                                <input type="password"
-                                       class="form-control"
-                                       name="currentPassword"
-                                       required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">New Password</label>
-                                <input type="password"
-                                       class="form-control"
-                                       name="newPassword"
-                                       required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Confirm New Password</label>
-                                <input type="password"
-                                       class="form-control"
-                                       name="confirmPassword"
-                                       required>
-                            </div>
-
-                            <button type="submit" class="btn btn-danger btn-sm">
-                                Update Password
-                            </button>
-
-                        </form>
-
-                    </div>
+                    </form>
                 </div>
             </div>
 
         </div>
-
-        <!-- Admin Notice -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="alert alert-info mb-0">
-                    <strong>Note:</strong>
-                    Position, department, office, and username changes must be
-                    requested through the system administrator.
-                </div>
-            </div>
-        </div>
-
     </div>
-</div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+        
+            const form = document.getElementById('changePasswordForm');
+        
+            if (!form) return;
+        
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+        
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const formData = new FormData(form);
+        
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+        
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    return response.json().then(data => {
+                        if (!response.ok || data.status === 'error') {
+                            throw new Error(data.message || 'Password update failed');
+                        }
+                        return data;
+                    });
+                })
+                .then(data => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: data.message || 'Password updated successfully',
+                        confirmButtonColor: '#E8392F',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+        
+                    form.reset();
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message,
+                        confirmButtonColor: '#E8392F'
+                    });
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Update Password';
+                });
+            });
+        
+        });
+        </script>
+        
 
+</div>
 </html>

@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.docsdepository.demo.Entity.DocumentClassification;
 
 @Repository
-public interface DocumentClassificationRepository extends JpaRepository<DocumentClassification,Long> {
+public interface DocumentClassificationRepository extends JpaRepository<DocumentClassification,Integer> {
 
 }

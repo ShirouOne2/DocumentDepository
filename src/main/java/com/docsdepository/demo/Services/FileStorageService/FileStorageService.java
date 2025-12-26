@@ -7,13 +7,15 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileStorageService {
 
-    public static final String STORAGE_DIRECTORY = "uploads";
+    @Value("${app.upload.dir:uploads}")
+    private String STORAGE_DIRECTORY;
 
     public String saveFile(MultipartFile fileToSave) throws IOException {
         if (fileToSave == null) {

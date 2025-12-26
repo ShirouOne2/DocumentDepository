@@ -29,7 +29,7 @@ public class FileDeleteController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteFile(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String deleteFile(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
 
         Optional<ImportableInformation> document =
                 importableInformationRepository.findById(id);

@@ -1,15 +1,10 @@
 package com.docsdepository.demo.Entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -18,50 +13,25 @@ public class DocumentClassification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "document_classification_id")
-    private Long id;
+    @Column(name = "id")
+    private Integer id;
 
-    public Long getId() {
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    @Column(name = "document_name", nullable = false)
-    private String documentName;
-
-    public String getDocumentName() {
-        return documentName;
+    public String getName() {
+        return name;
     }
 
-    public void setDocumentName(String documentName) {
-        this.documentName = documentName;
+    public void setName(String name) {
+        this.name = name;
     }
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploaded_by", nullable = false)
-    private Users uploadedBy;
-
-    public Users getUploadedBy() {
-        return uploadedBy;
-    }
-
-    public void setUploadedBy(Users uploadedBy) {
-        this.uploadedBy = uploadedBy;
-    }
-
-    @Column(name = "date_created", updatable = false)
-    private LocalDateTime dateCreated;
-
-    public LocalDateTime getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(LocalDateTime dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    /* getters & setters */
 }

@@ -1,47 +1,122 @@
 package com.docsdepository.demo.Controller.FileController;
 
-import com.docsdepository.demo.Controller.DTO.UploadForm;
-import com.docsdepository.demo.Entity.ImportableInformation;
-import com.docsdepository.demo.Repository.ImportableInformationRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.List;
+import com.docsdepository.demo.Entity.ImportableInformation;
+import com.docsdepository.demo.Entity.Users;
+import com.docsdepository.demo.Repository.ImportableInformationRepository;
+import com.docsdepository.demo.Repository.DocumentClassificationRepository;
+import com.docsdepository.demo.Repository.UsersRepository;
+import com.docsdepository.demo.Services.SearchAnalyticsService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class FileController {
 
+    @Autowired
+    private ImportableInformationRepository fileRepository;
     
-    private final ImportableInformationRepository fileRepository;
+    @Autowired
+    private DocumentClassificationRepository classificationRepository;
 
-    public FileController(ImportableInformationRepository fileRepository) {
-        this.fileRepository = fileRepository;
-    }
+    @Autowired
+    private UsersRepository usersRepository;
 
-    @GetMapping("/files")
-    public String viewMyFiles(Model model) {
-        // Fetch ALL documents
-        List<ImportableInformation> documents = fileRepository.findAll();
-        
-        // This log is CRUCIAL for debugging!
-        System.out.println("DEBUG: Files Retrieved from DB: " + documents.size()); 
-        model.addAttribute("activePage", "files");
-        model.addAttribute("documents", documents); // The list name must be 'documents'
-        model.addAttribute("uploadForm", new UploadForm());
+    @Autowired
+    private SearchAnalyticsService searchAnalyticsService;
+
+    @GetMapping("/myfiles")
+    public String myFiles(Model model, HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/Userlogin";
+        }
+
+        Users currentUser = usersRepository.findByIdWithOfficeHierarchy(userId);
+        if (currentUser == null) {
+            session.invalidate();
+            return "redirect:/Userlogin";
+        }
+
+        List<ImportableInformation> documents = 
+            fileRepository.findByUploadedByAndIsArchivedFalse(currentUser);
+
+        model.addAttribute("documents", documents);
+        model.addAttribute("activePage", "myfiles");
+        model.addAttribute("classifications", classificationRepository.findAll());
+
         return "myfiles";
     }
-
+    
     @GetMapping("/myfiles/search")
-    public String searchFiles(@RequestParam("query") String query, Model model) {
-        // Search by title (or integrate full-text search)
-        List<ImportableInformation> searchResults = fileRepository.findByTitleContainingIgnoreCase(query);
+    public String searchMyFiles(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) Integer classificationId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            Model model,
+            HttpSession session) {
         
-        model.addAttribute("documents", searchResults);
-        model.addAttribute("query", query); // To keep the search term in the input field
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/Userlogin";
+        }
+
+        Users currentUser = usersRepository.findByIdWithOfficeHierarchy(userId);
+        if (currentUser == null) {
+            session.invalidate();
+            return "redirect:/Userlogin";
+        }
+
+        LocalDateTime startDateTime = (startDate != null && !startDate.isEmpty()) 
+            ? LocalDate.parse(startDate).atStartOfDay() 
+            : null;
+
+        LocalDateTime endDateTime = (endDate != null && !endDate.isEmpty()) 
+            ? LocalDate.parse(endDate).atTime(LocalTime.MAX) 
+            : null;
+
+        List<ImportableInformation> documents = fileRepository.searchMyFiles(
+                currentUser.getUserId(),
+                query,
+                classificationId,
+                startDateTime,
+                endDateTime
+        );
+
+        // Record the search
+        if (query != null && !query.trim().isEmpty()) {
+            searchAnalyticsService.recordSearch(
+                currentUser, 
+                query, 
+                "myfiles", 
+                documents.size()
+            );
+        }
+
+        model.addAttribute("documents", documents);
+        model.addAttribute("classifications", classificationRepository.findAll());
+        model.addAttribute("activePage", "myfiles");
         
+        // Add recent searches
+        model.addAttribute("recentSearches", searchAnalyticsService.getRecentSearches(currentUser, 5));
+        
+        model.addAttribute("query", query);
+        model.addAttribute("selectedClassification", classificationId);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+
         return "myfiles";
     }
-
-    // You will need to implement the @GetMapping("/delete/{id}") for the delete functionality
+    
 }

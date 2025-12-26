@@ -1,51 +1,80 @@
-package com.docsdepository.demo.Entity; 
+package com.docsdepository.demo.Entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "importable_information")
+@Table(name = "importables_information")
 public class ImportableInformation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "document_id")
-    private Long id;
+    private Integer documentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "document_classification_id", nullable = false)
     private DocumentClassification documentClassification;
 
-    @Column(nullable = false)
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column
+    @Column(name = "description")
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "filename", nullable = false)
     private String filename;
 
     @Column(name = "date_created", updatable = false)
     private LocalDateTime dateCreated;
 
-    @Column(name = "upload_date")
-    private LocalDateTime uploadDate;
-
-    // ✅ NEW FIELDS
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploaded_by")
+    @JoinColumn(name = "uploaded_by", referencedColumnName = "username")
     private Users uploadedBy;
 
-    @Column(name = "intended_viewer_group")
-    private String intendedViewerGroup;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "intended_viewer_group", referencedColumnName = "id")
+    private IntendedViewerGroup intendedViewerGroup;
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
+    @Column(name = "is_archived")
+    private Boolean isArchived = false;
+
+    @Column(name = "upload_date", nullable = false)
+    private LocalDateTime uploadDate;
+
+    public LocalDateTime getUploadDate() {
+        return uploadDate;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setUploadDate(LocalDateTime uploadDate) {
+        this.uploadDate = uploadDate;
+    }
+
+    public Boolean getIsArchived() {
+        return isArchived;
+    }
+
+    public void setIsArchived(Boolean isArchived) {
+        this.isArchived = isArchived;
+    }
+    @Column(name = "archived_date")
+    private LocalDateTime archivedDate;
+
+    public LocalDateTime getArchivedDate() {
+        return archivedDate;
+    }
+
+    public void setArchivedDate(LocalDateTime archivedDate) {
+        this.archivedDate = archivedDate;
+    }
+
+    // Getters and Setters
+    public Integer getDocumentId() {
+        return documentId;
+    }
+
+    public void setDocumentId(Integer documentId) {
+        this.documentId = documentId;
     }
 
     public DocumentClassification getDocumentClassification() {
@@ -88,14 +117,6 @@ public class ImportableInformation {
         this.dateCreated = dateCreated;
     }
 
-    public LocalDateTime getUploadDate() {
-        return uploadDate;
-    }
-
-    public void setUploadDate(LocalDateTime uploadDate) {
-        this.uploadDate = uploadDate;
-    }
-
     public Users getUploadedBy() {
         return uploadedBy;
     }
@@ -104,11 +125,11 @@ public class ImportableInformation {
         this.uploadedBy = uploadedBy;
     }
 
-    public String getIntendedViewerGroup() {
+    public IntendedViewerGroup getIntendedViewerGroup() {
         return intendedViewerGroup;
     }
-
-    public void setIntendedViewerGroup(String intendedViewerGroup) {
+    
+    public void setIntendedViewerGroup(IntendedViewerGroup intendedViewerGroup) {
         this.intendedViewerGroup = intendedViewerGroup;
     }
 }

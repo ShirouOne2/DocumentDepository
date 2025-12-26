@@ -1,27 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Login | PhilPost DDS</title>
 
-    <!-- Your existing CSS -->
-    <link th:href="@{/css/sidebar/sidebar-layout.css}" rel="stylesheet">
-
-    <!-- Icons (optional but nice) -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
     <style>
-        /* --- LOGIN PAGE OVERRIDES / ADDITIONS --- */
+        :root {
+            --primary-accent: #E8392F; 
+            --logo-secondary-color: #2C73D2;
+            --body-font: 'Montserrat', sans-serif;
+            --bg-gray: #F8F9FA;
+        }
 
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
+        }
+
+        body {
             height: 100vh;
-            background: linear-gradient(
-                135deg,
-                rgba(44, 115, 210, 0.08),
-                rgba(44, 115, 210, 0.02)
-            );
+            background-color: var(--bg-gray);
+            font-family: var(--body-font);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -29,150 +32,181 @@
 
         .login-container {
             width: 100%;
-            max-width: 420px;
-            background-color: var(--nav-bg);
-            border-radius: var(--card-border-radius);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            padding: 2.5rem;
-        }
-
-        .login-header {
+            max-width: 360px;
+            background: #FFFFFF;
+            padding: 2.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             text-align: center;
-            margin-bottom: 2rem;
+            /* Red line removed from here */
         }
 
-        .login-header h1 {
+        .brand-header {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .brand-header img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 0.5rem;
+        }
+
+        .nav_logo-name {
+            display: block;
+            color: var(--logo-secondary-color);
+            font-size: 1.35rem;
             font-weight: 700;
-            color: var(--primary-accent);
-            margin-bottom: 0.25rem;
+            letter-spacing: 1px;
+            line-height: 1;
         }
 
-        .login-header p {
-            font-size: 0.9rem;
-            color: var(--secondary-color);
+        .logo-red-accent {
+            color: var(--primary-accent);
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #333333;
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .error-alert {
+            background-color: #FCEBEA;
+            color: var(--primary-accent);
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid rgba(232, 57, 47, 0.1);
         }
 
         .form-group {
-            margin-bottom: 1.25rem;
+            text-align: left;
+            margin-bottom: 1.2rem;
         }
 
         .form-label {
             display: block;
-            font-weight: 600;
-            font-size: 0.85rem;
-            margin-bottom: 0.35rem;
-            color: var(--nav-text-color);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #666;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 12px;
+            color: #A0A0A0;
+            font-size: 1.2rem;
+            pointer-events: none;
+            z-index: 2;
         }
 
         .form-control {
             width: 100%;
-            padding: 0.65rem 0.75rem;
-            border-radius: 6px;
-            border: 1px solid #dee2e6;
+            padding: 0.7rem 0.75rem 0.7rem 2.6rem;
             font-family: var(--body-font);
-            font-size: 0.95rem;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            font-size: 0.9rem;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            transition: all 0.2s ease;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary-accent);
-            box-shadow: 0 0 0 3px rgba(44, 115, 210, 0.15);
+            box-shadow: 0 0 0 3px rgba(232, 57, 47, 0.1);
         }
 
         .login-btn {
             width: 100%;
-            padding: 0.7rem;
+            padding: 0.8rem;
             background-color: var(--primary-accent);
-            color: #fff;
+            color: white;
             border: none;
-            border-radius: 6px;
-            font-weight: 600;
+            border-radius: 8px;
+            font-family: var(--body-font);
+            font-weight: 700;
             font-size: 0.95rem;
             cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
+            transition: transform 0.1s, background-color 0.2s;
+            margin-top: 0.5rem;
         }
 
         .login-btn:hover {
-            background-color: #235fb1;
+            background-color: #d12f26;
         }
 
         .login-btn:active {
             transform: scale(0.98);
         }
 
-        .login-footer {
-            text-align: center;
-            margin-top: 1.25rem;
-            font-size: 0.8rem;
-            color: var(--secondary-color);
-        }
-
-        .login-footer a {
-            color: var(--primary-accent);
-            font-weight: 600;
-        }
-
-        .input-icon {
-            position: relative;
-        }
-
-        .input-icon i {
-            position: absolute;
-            top: 50%;
-            left: 10px;
-            transform: translateY(-50%);
-            color: #adb5bd;
-            font-size: 1.1rem;
-        }
-
-        .input-icon input {
-            padding-left: 2.5rem;
+        .footer-text {
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #999;
+            line-height: 1.5;
         }
     </style>
 </head>
-
 <body>
 
 <div class="login-container">
-    <div class="login-header">
-        <h1>Welcome Back</h1>
-        <p>Please sign in to continue</p>
+    <div class="brand-header">
+        <img th:src="@{/assets/pstmnIcon.png}" alt="PhilPost Logo"/>
+        
+        <span class="nav_logo-name">
+            PHIL<span class="logo-red-accent">POST</span>
+        </span>
+        <div class="logo-subtitle">Document Depository</div>
     </div>
 
-    <!-- SESSION-READY FORM -->
-    <form action="/login" method="post">
-        <div class="form-group input-icon">
+    <div th:if="${error}" class="error-alert">
+        <i class='bx bxs-error-circle'></i>
+        <span th:text="${error}"></span>
+    </div>
+
+    <form th:action="@{/login}" method="post">
+        <div class="form-group">
             <label class="form-label">Username</label>
-            <i class="bx bx-user"></i>
-            <input
-                type="text"
-                name="username"
-                class="form-control"
-                placeholder="Enter your username"
-                required
-            >
+            <div class="input-wrapper">
+                <i class='bx bx-user'></i>
+                <input type="text" name="username" class="form-control" placeholder="Your username" required autofocus>
+            </div>
         </div>
 
-        <div class="form-group input-icon">
+        <div class="form-group">
             <label class="form-label">Password</label>
-            <i class="bx bx-lock-alt"></i>
-            <input
-                type="password"
-                name="password"
-                class="form-control"
-                placeholder="Enter your password"
-                required
-            >
+            <div class="input-wrapper">
+                <i class='bx bx-lock-alt'></i>
+                <input type="password" name="password" class="form-control" placeholder="Your password" required>
+            </div>
         </div>
 
-        <button type="submit" class="login-btn">
-            Login
-        </button>
+        <button type="submit" class="login-btn">Sign In</button>
     </form>
 
-    <div class="login-footer">
-        © 2025 Your System Name
+    <div class="footer-text">
+        &copy; 2025 Philippine Postal Corporation<br>
+        Management Information Systems Dept.
     </div>
 </div>
 
