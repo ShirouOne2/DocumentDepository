@@ -1,209 +1,694 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
-th:replace="~{layout/main-layout :: document('My Uploaded Documents', ~{::content}, ~{::modal-content})}">
+      th:replace="~{layout/main-layout :: document('My Uploaded Documents', ~{::content})}">
 
-    <div th:fragment="content">
+<div th:fragment="content">
 
-        <div id="content-my-files">
-            <h2 class="mb-3"><i class="fas fa-folder me-2"></i>My Uploaded Files</h2>
-            <p class="text-muted mb-4">A complete list of documents you have uploaded to the depository.</p>
-            
-            <div class="card">
-                <div class="card-body p-4">
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
-                    <div class="row mb-4 align-items-center">
-                        <div th:replace="fragments/uploadformmodal :: uploadFormModalFragment"></div>
-                        <div class="col-md-3"> 
-                            <div class="d-grid">
-                                <button type="button" 
-                                        class="btn btn-primary shadow-sm" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#uploadModal" 
-                                        title="Upload New Document"
-                                        style="border-radius: 0.25rem;"> 
-                                    <i class="fas fa-plus-circle me-1"></i> New File
-                                </button>
+        .form-container {
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            background-color: white;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .page-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+        }
+
+        .page-header h4,
+        .page-header i {
+            color: white;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .page-body {
+            padding: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #E8392F;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #fcebea;
+        }
+
+        /* TABLE */
+        table thead th {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #495057;
+            background-color: #f8f9fa;
+        }
+
+        table tbody td {
+            font-size: 0.75rem;
+            vertical-align: middle;
+        }
+
+        .filename {
+            color: #6c757d;
+            font-size: 0.7rem;
+        }
+
+        .viewer-badge {
+            background-color: #fcebea;
+            color: #E8392F;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.5rem;
+            font-weight: 600;
+            border-radius: 4px;
+        }
+
+        .btn-sm {
+            padding: 0.2rem 0.45rem;
+            font-size: 0.7rem;
+        }
+
+        /* MODAL STYLES */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 2% auto;
+            padding: 0;
+            border: 1px solid #888;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+            max-width: 700px;
+            width: 90%;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-table td {
+            padding: 8px 0;
+            vertical-align: top;
+            word-break: break-word;
+            font-size: 0.85rem;
+        }
+
+        .info-table td:first-child {
+            width: 40%;
+            color: #666;
+        }
+
+        .comment-item {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border-left: 3px solid #E8392F;
+        }
+
+        .comment-author {
+            font-weight: bold;
+            color: #E8392F;
+            margin-bottom: 5px;
+        }
+
+        .comment-date {
+            font-size: 0.75rem;
+            color: #666;
+            margin-left: 10px;
+        }
+
+        .comment-text {
+            margin-top: 5px;
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.85rem;
+        }
+
+        .info-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .info-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .info-section::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .info-section::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .viewer-actions .btn {
+            padding: 12px 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .viewer-actions .btn i {
+            margin-right: 8px;
+        }
+
+        .form-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-control-sm, .form-select-sm {
+            font-size: 0.8rem;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+        }
+
+        .form-control-sm:focus, .form-select-sm:focus {
+            border-color: #E8392F;
+            box-shadow: 0 0 0 0.2rem rgba(232, 57, 47, 0.25);
+        }
+
+        .row.g-3 {
+            margin-bottom: 1rem;
+        }
+
+        .g-3 > * {
+            padding-right: calc(var(--bs-gutter-x) * .5);
+            padding-left: calc(var(--bs-gutter-x) * .5);
+        }
+        .search-hint {
+            font-size: 0.65rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+    </style>
+
+    <div class="form-container">
+
+        <!-- HEADER -->
+        <div class="page-header">
+            <h4><i class="fas fa-folder-open me-2"></i>My Uploaded Documents</h4>
+        </div>
+
+        <!-- BODY -->
+        <div class="page-body">
+
+            <!-- SEARCH & FILTER -->
+            <div class="form-section">
+                <form th:action="@{/myfiles/search}" method="get">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <input type="text"
+                                   class="form-control form-control-sm"
+                                   name="query"
+                                   th:value="${query}"
+                                   placeholder="Search keywords...">
+                            <div class="search-hint">
+                                Searches document <strong>title</strong> and <strong>description</strong>
                             </div>
                         </div>
-                    
-                        <div class="col-md-9">
-                            <form class="d-flex" role="search" th:action="@{/myfiles/search}" method="get">
-                                <input class="form-control me-2" type="search" placeholder="Search files..."
-                                    aria-label="Search" name="query"> 
-                                
-                                <button class="btn btn-outline-primary" type="submit">
-                                    <i class="fas fa-search me-1"></i>Search
-                                </button>
-                            </form>
-                        </div>
-                        
-                    </div>
 
-                    <div th:if="${not #lists.isEmpty(documents)}">
-                        <div class="table-responsive">
-                            <table class="table table-hover table-sm">
-                                
-                                <thead class="bg-light">
-                                    <tr> 
-                                        <th scope="col">#</th>
-                                        <th scope="col">Title</th>
-                                        <th scope="col">Description</th>
-                                        <th scope="col">Type</th> 
-                                        <th scope="col">Upload Date</th>
-                                        <th scope="col" class="text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                
-                                <tbody>
-                                    <tr th:each="doc, i : ${documents}">
-                                        <th scope="row" th:text="${i.index + 1}"></th>
-                                        <td th:text="${doc.title}"></td>
-                                        <td class="text-truncate" style="max-width: 250px;" th:text="${doc.description}"></td>
-                                        
-                                        <td th:text="${doc.classId}"></td> 
-                                        
-                                        <td th:text="${doc.dateCreated}"></td>
-                                        
-                                        <td class="text-center">
-                                            <a th:href="@{/download/{id}(id=${doc.id})}"
-                                            class="btn btn-sm btn-outline-success me-2" title="Download File">
-                                                <i class="fas fa-download"></i>
-                                            </a>
-                                            <button class="btn btn-sm btn-outline-danger btn-delete"
-                                                    th:data-file-id="${doc.id}" title="Delete File">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="col-md-6">
+                            <select class="form-select form-select-sm" name="classificationId">
+                                <option value="">All Classifications</option>
+                                <option th:each="c : ${classifications}"
+                                        th:value="${c.id}"
+                                        th:text="${c.name}"
+                                        th:selected="${selectedClassification == c.id}">
+                                </option>
+                            </select>
+                            <div class="search-hint">
+                                Filter by document classification
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <input type="date"
+                                   class="form-control form-control-sm"
+                                   name="startDate"
+                                   th:value="${startDate}">
+                            <div class="search-hint">
+                                Document date from
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <input type="date"
+                                   class="form-control form-control-sm"
+                                   name="endDate"
+                                   th:value="${endDate}">
+                            <div class="search-hint">
+                                Document date to
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                            <a th:href="@{/shared}" class="btn btn-secondary btn-sm w-100 mt-1">
+                                <i class="fas fa-redo"></i> Reset
+                            </a>
+                            <div class="search-hint text-center">
+                                Combine filters to narrow results
+                            </div>
                         </div>
                     </div>
-
-                    <div th:if="${#lists.isEmpty(documents)}"
-                        class="alert alert-info text-center mt-4">
-                        <i class="fas fa-info-circle me-2"></i>You have not uploaded any documents yet.
-                    </div>
-
-                </div>
+                </form>
             </div>
 
+            <!-- DOCUMENT LIST -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="fas fa-file-alt me-2"></i>Uploaded Files
+                </div>
+
+                <div th:if="${not #lists.isEmpty(documents)}" class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Classification</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Filename</th>
+                                <th>Document Date</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr th:each="doc, i : ${documents}">
+                                    <td th:text="${i.index + 1}"></td>
+                                
+                                    <td th:text="${doc.documentClassification.name}"></td>
+                                
+                                    <td th:text="${doc.title}"></td>
+                                
+                                    <td class="text-truncate" style="max-width: 220px"
+                                        th:text="${doc.description}"></td>
+                                
+                                        <td class="filename text-muted"
+                                        th:text="${doc.filename}"></td>
+                                
+                                    <!-- DOCUMENT DATE -->
+                                    <td class="text-muted small" th:text="${doc.dateCreated != null
+                                        ? #temporals.format(doc.dateCreated, 'yyyy-MM-dd')
+                                        : '-'}"></td>
+                                
+                                    <!-- ACTIONS -->
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-primary btn-view"
+                                                th:data-id="${doc.documentId}"
+                                                title="View details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                    </table>
+                </div>
+
+                <!-- EMPTY STATE -->
+                <div th:if="${#lists.isEmpty(documents)}"
+                     class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    You have not uploaded any documents yet.
+                </div>
+
+                <!-- Document Viewer Modal -->
+                <div id="documentViewerModal" class="modal" style="display: none;">
+                    <div class="modal-content" style="width: 90%; max-width: 1200px; height: 90vh;">
+                        <div class="modal-header">
+                            <h2 id="modalDocTitle">Document Title</h2>
+                            <span class="close" onclick="closeDocumentModal()">&times;</span>
+                        </div>
+                        
+                        <div class="modal-body" style="display: flex; height: calc(90vh - 120px);">
+                            <div class="info-section" style="flex: 1; overflow-y: auto; padding: 0 20px;">
+                                
+                                <!-- Action Buttons at Top -->
+                                <div class="viewer-actions" style="margin-bottom: 20px; text-align: center; padding-bottom: 20px; border-bottom: 2px solid #dee2e6;">
+                                    <button class="btn btn-primary" onclick="viewDocumentNewTab()" style="margin-right: 10px;">
+                                        <i class="fas fa-eye"></i> View Document
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="downloadDocument()">
+                                        <i class="fas fa-download"></i> Download
+                                    </button>
+                                    <button class="btn btn-warning" onclick="archiveDocument()" style="background-color: #ff9800; border-color: #ff9800;">
+                                        <i class="fas fa-archive"></i> Archive
+                                    </button>
+                                </div>
+                                
+                                <!-- Document Information -->
+                                <div class="document-info">
+                                    <h3>Document Information</h3>
+                                    <table class="info-table">
+                                        <tr>
+                                            <td><strong>Filename:</strong></td>
+                                            <td id="infoFilename">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Uploaded By:</strong></td>
+                                            <td id="infoUploadedBy">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Upload Date:</strong></td>
+                                            <td id="infoUploadDate">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Classification:</strong></td>
+                                            <td id="infoClassification">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Shared With:</strong></td>
+                                            <td id="infoViewerGroup">-</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Description:</strong></td>
+                                            <td id="infoDescription">-</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                
+                                <!-- Comments Section -->
+                                <div class="comments-section" style="margin-top: 30px;">
+                                    <h3>Comments (<span id="commentCount">0</span>)</h3>
+                                    
+                                    <!-- Add comment form -->
+                                    <div class="add-comment">
+                                        <textarea id="commentText" placeholder="Add a comment..." rows="3" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                                        <button onclick="addComment()" class="btn btn-secondary" style="margin-top: 10px;">
+                                            Post Comment
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Comments list -->
+                                    <div id="commentsList" style="margin-top: 20px;">
+                                        <!-- Comments will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDocumentId = null;
+    
+        function openDocumentModal(documentId) {
+            currentDocumentId = documentId;
+            document.getElementById('documentViewerModal').style.display = 'block';
             
-
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
+            fetch(`/documents/details/${documentId}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to load document');
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById('modalDocTitle').textContent = data.title;
+                    document.getElementById('infoFilename').textContent = data.filename;
+                    document.getElementById('infoUploadedBy').textContent = data.uploadedBy;
+                    document.getElementById('infoUploadDate').textContent = formatDate(data.dateCreated);
+                    document.getElementById('infoClassification').textContent = data.documentClassification;
+                    document.getElementById('infoViewerGroup').textContent = data.intendedViewerGroup;
+                    document.getElementById('infoDescription').textContent = data.description || 'No description';
                     
-                    // =========================================================
-                    // 1. DELETE CONFIRMATION LOGIC (Your Existing Code)
-                    // =========================================================
-                    document.querySelectorAll('.btn-delete').forEach(button => {
-                        button.addEventListener('click', function () {
-                            const fileId = this.getAttribute('data-file-id');
+                    loadComments(data.comments);
+                    document.getElementById('commentCount').textContent = data.commentCount;
+                })
+                .catch(error => {
+                    console.error('Error loading document:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to load document details',
+                        confirmButtonColor: '#E8392F'
+                    });
+                    closeDocumentModal();
+                });
+        }
+    
+        function closeDocumentModal() {
+            document.getElementById('documentViewerModal').style.display = 'none';
+            currentDocumentId = null;
+        }
 
-                            Swal.fire({
-                                title: 'Are you sure?',
-                                text: "You won't be able to revert this file!",
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonColor: '#d33',
-                                cancelButtonColor: '#6c757d',
-                                confirmButtonText: 'Yes, delete it!'
-                            }).then((result) => {
-                                if (result.isConfirmed) {
-                                    // Redirects to the Spring Boot endpoint to perform the delete
-                                    window.location.href = '/delete/' + fileId;
-                                }
-                            });
+        function viewDocumentNewTab() {
+            window.open(`/documents/view/${currentDocumentId}`, '_blank');
+        }
+
+        function downloadDocument() {
+            fetch(`/documents/download/${currentDocumentId}`)
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = document.getElementById('infoFilename').textContent || 'document';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    console.error('Download failed:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Download Failed',
+                        text: 'Could not download the file. Please try again.',
+                        confirmButtonColor: '#E8392F'
+                    });
+                });
+        }
+
+        function archiveDocument() {
+            Swal.fire({
+                title: 'Archive this document?',
+                html: `
+                    <p>This document will be moved to the archive and will no longer be visible in your active documents.</p>
+                    <p><strong>Note:</strong> Archived documents can be restored by administrators if needed.</p>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff9800',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-archive me-2"></i>Yes, archive it',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Call your archive endpoint
+                    fetch(`/documents/archive/${currentDocumentId}`, {
+                        method: 'POST'
+                    })
+                    .then(response => {
+                        if (!response.ok) throw new Error('Failed to archive document');
+                        return response.json();
+                    })
+                    .then(data => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Archived!',
+                            text: 'Document has been archived successfully.',
+                            confirmButtonColor: '#E8392F',
+                            timer: 2000
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error archiving document:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to archive document. Please try again.',
+                            confirmButtonColor: '#E8392F'
                         });
                     });
-
-                    // =========================================================
-                    // 2. UPLOAD MODAL LOGIC (New Code)
-                    // =========================================================
-                    
-                    // A. Set today's date in the read-only field
-                    const today = new Date();
-                    const yyyy = today.getFullYear();
-                    const mm = String(today.getMonth() + 1).padStart(2, '0');
-                    const dd = String(today.getDate()).padStart(2, '0');
-                    const formattedDate = `${yyyy}-${mm}-${dd}`;
-                    
-                    const dateCreatedElement = document.getElementById('dateCreated');
-                    if (dateCreatedElement) {
-                        dateCreatedElement.value = formattedDate;
-                    }
-
-                    // B. Handle AJAX Form Submission
-                    const uploadForm = document.getElementById('uploadDocumentForm');
-
-                    if (uploadForm) {
-                        uploadForm.addEventListener('submit', function(event) {
-                            event.preventDefault();
-
-                            const form = event.target;
-                            const formData = new FormData(form);
-                            const submitButton = form.querySelector('button[type="submit"]');
-                            
-                            // Disable button and update text/spinner
-                            submitButton.disabled = true;
-                            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Uploading...';
-
-                            fetch(form.action, {
-                                method: 'POST',
-                                body: formData
-                            })
-                            .then(response => {
-                                if (!response.ok) {
-                                    // Handle HTTP error responses
-                                    return response.text().then(text => { throw new Error(text) });
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Upload Successful!',
-                                    text: data.message || 'Your document has been uploaded and saved.',
-                                    timer: 2000,
-                                    timerProgressBar: true,
-                                    showConfirmButton: false
-                                }).then(() => {
-                                    form.reset();
-                                    // Hide the modal
-                                    const bootstrapModal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
-                                    if (bootstrapModal) {
-                                        bootstrapModal.hide();
-                                    }
-                                    // Reload the page to display the new file in the table
-                                    window.location.reload(); 
-                                });
-                            })
-                            .catch(error => {
-                                console.error('Upload error:', error);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Upload Failed!',
-                                    text: error.message || 'There was an error uploading your document. Please try again.',
-                                    confirmButtonText: 'OK'
-                                });
-                            })
-                            .finally(() => {
-                                // Re-enable button on completion
-                                submitButton.disabled = false;
-                                // Reset button text (make sure this matches the original text from your modal HTML)
-                                submitButton.innerHTML = 'Upload Document'; 
-                            });
-                        });
-                    }
-                    // =========================================================
-                });
-            </script>
-
-        </div>
-        <div th:fragment="modal-content">
-            <div th:replace="fragments/uploadformmodal :: uploadFormModalFragment"></div>
-        </div>
-
-    </div>
+                }
+            });
+        }
     
+        function loadComments(comments) {
+            const commentsList = document.getElementById('commentsList');
+            commentsList.innerHTML = '';
+            
+            if (comments.length === 0) {
+                commentsList.innerHTML = '<p style="color: #666; font-size: 0.85rem;">No comments yet. Be the first to comment!</p>';
+                return;
+            }
+            
+            comments.forEach(comment => {
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'comment-item';
+                commentDiv.innerHTML = `
+                    <div class="comment-author">
+                        ${escapeHtml(comment.user.username)}
+                        <span class="comment-date">${formatDate(comment.createdDate)}</span>
+                    </div>
+                    <div class="comment-text">${escapeHtml(comment.commentText)}</div>
+                `;
+                commentsList.appendChild(commentDiv);
+            });
+        }
+    
+        function addComment() {
+            const commentText = document.getElementById('commentText').value.trim();
+            
+            if (!commentText) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Empty Comment',
+                    text: 'Please enter a comment',
+                    confirmButtonColor: '#E8392F'
+                });
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('commentText', commentText);
+            
+            fetch(`/documents/${currentDocumentId}/comments`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to add comment');
+                return response.json();
+            })
+            .then(comment => {
+                document.getElementById('commentText').value = '';
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Comment Added',
+                    text: 'Your comment has been posted',
+                    confirmButtonColor: '#E8392F',
+                    timer: 1500
+                });
+                openDocumentModal(currentDocumentId);
+            })
+            .catch(error => {
+                console.error('Error adding comment:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to add comment. Please try again.',
+                    confirmButtonColor: '#E8392F'
+                });
+            });
+        }
+    
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+    
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    
+        window.onclick = function(event) {
+            const modal = document.getElementById('documentViewerModal');
+            if (event.target == modal) {
+                closeDocumentModal();
+            }
+        }
+    
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeDocumentModal();
+            }
+        });
+    
+        // Connect view buttons to modal
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.btn-view').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const id = this.dataset.id;
+                    openDocumentModal(id);
+                });
+            });
+        });
+    </script>
+
+</div>
 </html>

@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main-layout :: document('User Management', ~{::content})}">
+
+<div th:fragment="content">
+
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* Same styles as before - keeping them for completeness */
+        .user-management-container {
+            border: 1px solid #e5e7eb;
+            background-color: #fff;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+        }
+    
+        .user-management-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            border-bottom: 1px solid #dee2e6;
+        }
+    
+        .user-management-header h4,
+        .user-management-header i {
+            margin: 0;
+            color: #fff;
+            font-weight: 700;
+        }
+    
+        .user-management-body {
+            padding: 2rem;
+        }
+    
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #495057;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #E8392F;
+        }
+
+        .search-bar {
+            max-width: 400px;
+        }
+
+        .search-bar .form-control {
+            border-color: #e5e7eb;
+            font-size: 0.875rem;
+        }
+
+        .search-bar .form-control:focus {
+            border-color: #E8392F;
+            box-shadow: 0 0 0 0.2rem rgba(232, 57, 47, 0.15);
+        }
+
+        .table-responsive {
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+        }
+
+        table thead th {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #495057;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        table tbody td {
+            font-size: 0.85rem;
+            vertical-align: middle;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-right: 10px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-username {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            font-weight: 600;
+        }
+
+        .badge-admin {
+            background-color: #E8392F;
+            color: white;
+        }
+
+        .badge-user {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border: 1px solid #888;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 90%;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #f8f9fa;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            font-size: 0.875rem;
+            border-color: #e5e7eb;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #E8392F;
+            box-shadow: 0 0 0 0.2rem rgba(232, 57, 47, 0.15);
+        }
+
+        .btn-primary {
+            background-color: #E8392F;
+            border-color: #E8392F;
+        }
+
+        .btn-primary:hover {
+            background-color: #cf2f27;
+            border-color: #cf2f27;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffe69c;
+            color: #856404;
+            font-size: 0.85rem;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+            font-size: 0.85rem;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+            font-size: 0.85rem;
+        }
+    </style>
+
+    <!-- SUCCESS/ERROR ALERTS -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show mb-3" style="display:none;">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${success}" id="successMessage"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-3" style="display:none;">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <span th:text="${error}" id="errorMessage"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const successMessage = /*[[${success}]]*/ null;
+            const errorMessage = /*[[${error}]]*/ null;
+
+            if (successMessage) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: successMessage,
+                    confirmButtonColor: '#E8392F',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            }
+
+            if (errorMessage) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: errorMessage,
+                    confirmButtonColor: '#E8392F'
+                });
+            }
+        });
+    </script>
+
+    <!-- USER MANAGEMENT SECTION -->
+    <div class="user-management-container">
+        <div class="user-management-header">
+            <h4><i class="fas fa-users-cog me-2"></i>User Management</h4>
+        </div>
+
+        <div class="user-management-body">
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="section-title mb-0">
+                        <i class="fas fa-list me-2"></i>All Users
+                    </div>
+                    <div class="search-bar">
+                        <input type="text" 
+                               class="form-control" 
+                               id="searchInput"
+                               placeholder="Search users...">
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="userTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>User</th>
+                                <th>Position</th>
+                                <th>Department</th>
+                                <th>Office</th>
+                                <th>Role</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="user, i : ${users}">
+                                <td th:text="${i.index + 1}"></td>
+                            
+                                <td>
+                                    <div class="user-info">
+                                        <div class="user-avatar"
+                                             th:text="${#strings.substring(user.username,0,1).toUpperCase()}"></div>
+                                        <div class="user-details">
+                                            <span class="user-username" th:text="${user.username}"></span>
+                                        </div>
+                                    </div>
+                                </td>
+                            
+                                <td th:text="${user.jobPosition.name}"></td>
+                                <td th:text="${user.office.department.name}"></td>
+                                <td th:text="${user.office.officeName}"></td>
+                            
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${user.role.name == 'ADMIN'} ? 'badge-admin' : 'badge-user'"
+                                          th:text="${user.role.name}">
+                                    </span>
+                                </td>
+                            
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary btn-edit me-1"
+                                            th:data-user-id="${user.userId}"
+                                            th:data-username="${user.username}"
+                                            th:data-position-id="${user.jobPosition.id}"
+                                            th:data-office-id="${user.office.officeId}"
+                                            th:data-role-id="${user.role.id}"
+                                            th:data-is-admin="${user.role.name == 'ADMIN'}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning btn-reset-password"
+                                            th:data-user-id="${user.userId}"
+                                            th:data-username="${user.username}"
+                                            th:data-is-admin="${user.role.name == 'ADMIN'}">
+                                        <i class="fas fa-key"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="alert alert-warning mb-0">
+                <i class="fas fa-shield-alt me-2"></i>
+                <strong>Admin Restriction:</strong> You can only edit regular users. Admin accounts are protected and cannot be modified.
+            </div>
+        </div>
+    </div>
+
+    <!-- JOB POSITIONS MANAGEMENT SECTION -->
+    <div class="user-management-container">
+        <div class="user-management-header">
+            <h4><i class="fas fa-briefcase me-2"></i>Job Positions Management</h4>
+        </div>
+
+        <div class="user-management-body">
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="section-title mb-0">
+                        <i class="fas fa-list me-2"></i>All Positions
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddPositionModal()">
+                        <i class="fas fa-plus me-2"></i>Add Position
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Position Name</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="position, i : ${jobPositions}">
+                                <td th:text="${i.index + 1}"></td>
+                                <td th:text="${position.name}"></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit-position"
+                                            th:data-position-id="${position.id}"
+                                            th:data-position-name="${position.name}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete-position"
+                                            th:data-position-id="${position.id}"
+                                            th:data-position-name="${position.name}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEPARTMENTS MANAGEMENT SECTION -->
+    <div class="user-management-container">
+        <div class="user-management-header">
+            <h4><i class="fas fa-building me-2"></i>Departments Management</h4>
+        </div>
+
+        <div class="user-management-body">
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="section-title mb-0">
+                        <i class="fas fa-list me-2"></i>All Departments
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddDepartmentModal()">
+                        <i class="fas fa-plus me-2"></i>Add Department
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Department Name</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="dept, i : ${departments}">
+                                <td th:text="${i.index + 1}"></td>
+                                <td th:text="${dept.name}"></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit-department"
+                                            th:data-department-id="${dept.id}"
+                                            th:data-department-name="${dept.name}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete-department"
+                                            th:data-department-id="${dept.id}"
+                                            th:data-department-name="${dept.name}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AREAS MANAGEMENT SECTION -->
+    <div class="user-management-container">
+        <div class="user-management-header">
+            <h4><i class="fas fa-map-marked-alt me-2"></i>Areas Management</h4>
+        </div>
+
+        <div class="user-management-body">
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="section-title mb-0">
+                        <i class="fas fa-list me-2"></i>All Areas
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddAreaModal()">
+                        <i class="fas fa-plus me-2"></i>Add Area
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Area Name</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="area, i : ${areas}">
+                                <td th:text="${i.index + 1}"></td>
+                                <td th:text="${area.name}"></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit-area"
+                                            th:data-area-id="${area.id}"
+                                            th:data-area-name="${area.name}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete-area"
+                                            th:data-area-id="${area.id}"
+                                            th:data-area-name="${area.name}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OFFICES MANAGEMENT SECTION -->
+    <div class="user-management-container">
+        <div class="user-management-header">
+            <h4><i class="fas fa-door-open me-2"></i>Offices Management</h4>
+        </div>
+
+        <div class="user-management-body">
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="section-title mb-0">
+                        <i class="fas fa-list me-2"></i>All Offices
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddOfficeModal()">
+                        <i class="fas fa-plus me-2"></i>Add Office
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Office Name</th>
+                                <th>Department</th>
+                                <th>Area</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="office, i : ${offices}">
+                                <td th:text="${i.index + 1}"></td>
+                                <td th:text="${office.officeName}"></td>
+                                <td th:text="${office.department.name}"></td>
+                                <td th:text="${office.area.name}"></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit-office"
+                                            th:data-office-id="${office.officeId}"
+                                            th:data-office-name="${office.officeName}"
+                                            th:data-department-id="${office.department.id}"
+                                            th:data-area-id="${office.area.id}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete-office"
+                                            th:data-office-id="${office.officeId}"
+                                            th:data-office-name="${office.officeName}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEWER GROUPS MANAGEMENT SECTION -->
+    <div class="user-management-container">
+        <div class="user-management-header">
+            <h4><i class="fas fa-users me-2"></i>Intended Viewer Groups Management</h4>
+        </div>
+
+        <div class="user-management-body">
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="section-title mb-0">
+                        <i class="fas fa-list me-2"></i>All Viewer Groups
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddViewerGroupModal()">
+                        <i class="fas fa-plus me-2"></i>Add Viewer Group
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Group Name</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="group, i : ${viewerGroups}">
+                                <td th:text="${i.index + 1}"></td>
+                                <td th:text="${group.name}"></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit-viewergroup"
+                                            th:data-group-id="${group.id}"
+                                            th:data-group-name="${group.name}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete-viewergroup"
+                                            th:data-group-id="${group.id}"
+                                            th:data-group-name="${group.name}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOCUMENT CLASSIFICATIONS MANAGEMENT SECTION -->
+    <div class="user-management-container">
+        <div class="user-management-header">
+            <h4><i class="fas fa-file-alt me-2"></i>Document Classifications Management</h4>
+        </div>
+
+        <div class="user-management-body">
+            <div class="form-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="section-title mb-0">
+                        <i class="fas fa-list me-2"></i>All Classifications
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openAddClassificationModal()">
+                        <i class="fas fa-plus me-2"></i>Add Classification
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Classification Name</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="classification, i : ${documentClassifications}">
+                                <td th:text="${i.index + 1}"></td>
+                                <td th:text="${classification.name}"></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary me-1 btn-edit-classification"
+                                            th:data-classification-id="${classification.id}"
+                                            th:data-classification-name="${classification.name}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger btn-delete-classification"
+                                            th:data-classification-id="${classification.id}"
+                                            th:data-classification-name="${classification.name}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT USER MODAL -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-edit me-2"></i>Edit User</h3>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <form id="editUserForm" th:action="@{/devtools/users/update}" method="post">
+                    <input type="hidden" id="editUserId" name="userId">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="editUsername" 
+                               name="username"
+                               readonly
+                               style="background-color: #e9ecef; cursor: not-allowed;">
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i> Username cannot be changed (used in document references)
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Position</label>
+                        <select class="form-select" id="editPosition" name="positionId" required>
+                            <option value="">Select Position</option>
+                            <option th:each="position : ${jobPositions}" 
+                                    th:value="${position.id}" 
+                                    th:text="${position.name}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Office</label>
+                        <select class="form-select" id="editOffice" name="officeId" required>
+                            <option value="">Select Office</option>
+                            <option th:each="office : ${offices}" 
+                                    th:value="${office.officeId}" 
+                                    th:text="${office.officeName + ' - ' + office.department.name}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Role</label>
+                        <select class="form-select" id="editRole" name="roleId" required>
+                            <option th:each="role : ${roles}" 
+                                    th:value="${role.id}" 
+                                    th:text="${role.name}"></option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" 
+                                class="btn btn-secondary" 
+                                onclick="closeEditModal()">
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="confirmEditUser()">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESET PASSWORD MODAL -->
+    <div id="resetPasswordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-key me-2"></i>Reset Password</h3>
+                <span class="close" onclick="closeResetPasswordModal()">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <form id="resetPasswordForm" th:action="@{/devtools/users/reset-password}" method="post">
+                    <input type="hidden" id="resetUserId" name="userId">
+                    
+                    <div class="alert alert-warning mb-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        You are resetting the password for: <strong id="resetUsername"></strong>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">New Password</label>
+                        <input type="password" 
+                               class="form-control" 
+                               id="newPassword" 
+                               name="newPassword"
+                               minlength="6"
+                               required>
+                        <small class="form-text text-muted">Minimum 6 characters</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" 
+                               class="form-control" 
+                               id="confirmPassword"
+                               minlength="6"
+                               required>
+                        <small class="form-text text-danger" id="passwordMatchError" style="display:none;">
+                            Passwords do not match!
+                        </small>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" 
+                                class="btn btn-secondary" 
+                                onclick="closeResetPasswordModal()">
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-warning" id="resetPasswordBtn" onclick="confirmResetPassword()">
+                            <i class="fas fa-key me-2"></i>Reset Password
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT POSITION MODAL -->
+    <div id="positionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="positionModalTitle"><i class="fas fa-briefcase me-2"></i>Add Position</h3>
+                <span class="close" onclick="closePositionModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="positionForm" method="post">
+                    <input type="hidden" id="positionId" name="positionId">
+                    <div class="mb-3">
+                        <label class="form-label">Position Name</label>
+                        <input type="text" class="form-control" id="positionName" name="name" required>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" onclick="closePositionModal()">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="submitPositionForm()">
+                            <i class="fas fa-save me-2"></i>Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT DEPARTMENT MODAL -->
+    <div id="departmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="departmentModalTitle"><i class="fas fa-building me-2"></i>Add Department</h3>
+                <span class="close" onclick="closeDepartmentModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="departmentForm" method="post">
+                    <input type="hidden" id="departmentId" name="departmentId">
+                    <div class="mb-3">
+                        <label class="form-label">Department Name</label>
+                        <input type="text" class="form-control" id="departmentName" name="name" required>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" onclick="closeDepartmentModal()">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="submitDepartmentForm()">
+                            <i class="fas fa-save me-2"></i>Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT AREA MODAL -->
+    <div id="areaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="areaModalTitle"><i class="fas fa-map-marked-alt me-2"></i>Add Area</h3>
+                <span class="close" onclick="closeAreaModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="areaForm" method="post">
+                    <input type="hidden" id="areaId" name="areaId">
+                    <div class="mb-3">
+                        <label class="form-label">Area Name</label>
+                        <input type="text" class="form-control" id="areaName" name="name" required>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" onclick="closeAreaModal()">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="submitAreaForm()">
+                            <i class="fas fa-save me-2"></i>Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT OFFICE MODAL -->
+    <div id="officeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="officeModalTitle"><i class="fas fa-door-open me-2"></i>Add Office</h3>
+                <span class="close" onclick="closeOfficeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="officeForm" method="post">
+                    <input type="hidden" id="officeId" name="officeId">
+                    <div class="mb-3">
+                        <label class="form-label">Office Name</label>
+                        <input type="text" class="form-control" id="officeName" name="officeName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Department</label>
+                        <select class="form-select" id="officeDepartment" name="departmentId" required>
+                            <option value="">Select Department</option>
+                            <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}"></option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Area</label>
+                        <select class="form-select" id="officeArea" name="areaId" required>
+                            <option value="">Select Area</option>
+                            <option th:each="area : ${areas}" th:value="${area.id}" th:text="${area.name}"></option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" onclick="closeOfficeModal()">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="submitOfficeForm()">
+                            <i class="fas fa-save me-2"></i>Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT VIEWER GROUP MODAL -->
+    <div id="viewerGroupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="viewerGroupModalTitle"><i class="fas fa-users me-2"></i>Add Viewer Group</h3>
+                <span class="close" onclick="closeViewerGroupModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="viewerGroupForm" method="post">
+                    <input type="hidden" id="viewerGroupId" name="groupId">
+                    <div class="mb-3">
+                        <label class="form-label">Group Name</label>
+                        <input type="text" class="form-control" id="viewerGroupName" name="name" required>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" onclick="closeViewerGroupModal()">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="submitViewerGroupForm()">
+                            <i class="fas fa-save me-2"></i>Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT CLASSIFICATION MODAL -->
+    <div id="classificationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="classificationModalTitle"><i class="fas fa-file-alt me-2"></i>Add Classification</h3>
+                <span class="close" onclick="closeClassificationModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="classificationForm" method="post">
+                    <input type="hidden" id="classificationId" name="classificationId">
+                    <div class="mb-3">
+                        <label class="form-label">Classification Name</label>
+                        <input type="text" class="form-control" id="classificationName" name="name" required>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" onclick="closeClassificationModal()">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="submitClassificationForm()">
+                            <i class="fas fa-save me-2"></i>Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const searchValue = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll('#userTable tbody tr');
+            
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchValue) ? '' : 'none';
+            });
+        });
+
+        // Open edit modal
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const isAdmin = this.dataset.isAdmin === 'true';
+                    
+                    if (isAdmin) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Restricted',
+                            text: 'Admin accounts cannot be edited!',
+                            confirmButtonColor: '#E8392F'
+                        });
+                        return;
+                    }
+                    
+                    const userId = this.dataset.userId;
+                    const username = this.dataset.username;
+                    const positionId = this.dataset.positionId;
+                    const officeId = this.dataset.officeId;
+                    const roleId = this.dataset.roleId;
+                    
+                    document.getElementById('editUserId').value = userId;
+                    document.getElementById('editUsername').value = username;
+                    document.getElementById('editPosition').value = positionId;
+                    document.getElementById('editOffice').value = officeId;
+                    document.getElementById('editRole').value = roleId;
+                    
+                    document.getElementById('editUserModal').style.display = 'block';
+                });
+            });
+        });
+
+        // Close modal
+        function closeEditModal() {
+            document.getElementById('editUserModal').style.display = 'none';
+        }
+
+        // Confirm edit user with SweetAlert
+        function confirmEditUser() {
+            Swal.fire({
+                title: 'Confirm Changes',
+                text: 'Are you sure you want to update this user?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#E8392F',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, update it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('editUserForm').submit();
+                }
+            });
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('editUserModal');
+            if (event.target == modal) {
+                closeEditModal();
+            }
+        }
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeEditModal();
+                closeResetPasswordModal();
+            }
+        });
+
+        // ========== JOB POSITIONS ==========
+        document.querySelectorAll('.btn-edit-position').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.positionId;
+                const name = this.dataset.positionName;
+                editPosition(id, name);
+            });
+        });
+
+        document.querySelectorAll('.btn-delete-position').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.positionId;
+                const name = this.dataset.positionName;
+                deletePosition(id, name);
+            });
+        });
+
+        function openAddPositionModal() {
+            document.getElementById('positionModalTitle').innerHTML = '<i class="fas fa-briefcase me-2"></i>Add Position';
+            document.getElementById('positionForm').action = '/devtools/positions/add';
+            document.getElementById('positionId').value = '';
+            document.getElementById('positionName').value = '';
+            document.getElementById('positionModal').style.display = 'block';
+        }
+
+        function editPosition(id, name) {
+            document.getElementById('positionModalTitle').innerHTML = '<i class="fas fa-briefcase me-2"></i>Edit Position';
+            document.getElementById('positionForm').action = '/devtools/positions/update';
+            document.getElementById('positionId').value = id;
+            document.getElementById('positionName').value = name;
+            document.getElementById('positionModal').style.display = 'block';
+        }
+
+        function submitPositionForm() {
+            const name = document.getElementById('positionName').value;
+            const isEdit = document.getElementById('positionId').value !== '';
+            
+            Swal.fire({
+                title: isEdit ? 'Update Position?' : 'Add Position?',
+                text: `Are you sure you want to ${isEdit ? 'update' : 'add'} "${name}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#E8392F',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, save it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('positionForm').submit();
+                }
+            });
+        }
+
+        function deletePosition(id, name) {
+            Swal.fire({
+                title: 'Delete Position?',
+                html: `Are you sure you want to delete "<strong>${name}</strong>"?<br><small class="text-danger">This action cannot be undone!</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/devtools/positions/delete';
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'positionId';
+                    input.value = id;
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        function closePositionModal() {
+            document.getElementById('positionModal').style.display = 'none';
+        }
+
+        // ========== DEPARTMENTS ==========
+        document.querySelectorAll('.btn-edit-department').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.departmentId;
+                const name = this.dataset.departmentName;
+                editDepartment(id, name);
+            });
+        });
+
+        document.querySelectorAll('.btn-delete-department').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.departmentId;
+                const name = this.dataset.departmentName;
+                deleteDepartment(id, name);
+            });
+        });
+
+        function openAddDepartmentModal() {
+            document.getElementById('departmentModalTitle').innerHTML = '<i class="fas fa-building me-2"></i>Add Department';
+            document.getElementById('departmentForm').action = '/devtools/departments/add';
+            document.getElementById('departmentId').value = '';
+            document.getElementById('departmentName').value = '';
+            document.getElementById('departmentModal').style.display = 'block';
+        }
+
+        function editDepartment(id, name) {
+            document.getElementById('departmentModalTitle').innerHTML = '<i class="fas fa-building me-2"></i>Edit Department';
+            document.getElementById('departmentForm').action = '/devtools/departments/update';
+            document.getElementById('departmentId').value = id;
+            document.getElementById('departmentName').value = name;
+            document.getElementById('departmentModal').style.display = 'block';
+        }
+
+        function submitDepartmentForm() {
+            const name = document.getElementById('departmentName').value;
+            const isEdit = document.getElementById('departmentId').value !== '';
+            
+            Swal.fire({
+                title: isEdit ? 'Update Department?' : 'Add Department?',
+                text: `Are you sure you want to ${isEdit ? 'update' : 'add'} "${name}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#E8392F',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, save it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('departmentForm').submit();
+                }
+            });
+        }
+
+        function deleteDepartment(id, name) {
+            Swal.fire({
+                title: 'Delete Department?',
+                html: `Are you sure you want to delete "<strong>${name}</strong>"?<br><small class="text-danger">This action cannot be undone!</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/devtools/departments/delete';
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'departmentId';
+                    input.value = id;
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        function closeDepartmentModal() {
+            document.getElementById('departmentModal').style.display = 'none';
+        }
+
+        // ========== AREAS ==========
+        function openAddAreaModal() {
+            document.getElementById('areaModalTitle').innerHTML = '<i class="fas fa-map-marked-alt me-2"></i>Add Area';
+            document.getElementById('areaForm').action = '/devtools/areas/add';
+            document.getElementById('areaId').value = '';
+            document.getElementById('areaName').value = '';
+            document.getElementById('areaModal').style.display = 'block';
+        }
+
+        function editArea(id, name) {
+            document.getElementById('areaModalTitle').innerHTML = '<i class="fas fa-map-marked-alt me-2"></i>Edit Area';
+            document.getElementById('areaForm').action = '/devtools/areas/update';
+            document.getElementById('areaId').value = id;
+            document.getElementById('areaName').value = name;
+            document.getElementById('areaModal').style.display = 'block';
+        }
+
+        function submitAreaForm() {
+            const name = document.getElementById('areaName').value;
+            const isEdit = document.getElementById('areaId').value !== '';
+            
+            Swal.fire({
+                title: isEdit ? 'Update Area?' : 'Add Area?',
+                text: `Are you sure you want to ${isEdit ? 'update' : 'add'} "${name}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#E8392F',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, save it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('areaForm').submit();
+                }
+            });
+        }
+
+        function deleteArea(id, name) {
+            Swal.fire({
+                title: 'Delete Area?',
+                html: `Are you sure you want to delete "<strong>${name}</strong>"?<br><small class="text-danger">This action cannot be undone!</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/devtools/areas/delete';
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'areaId';
+                    input.value = id;
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        function closeAreaModal() {
+            document.getElementById('areaModal').style.display = 'none';
+        }
+
+        // ========== OFFICES ==========
+        document.querySelectorAll('.btn-edit-office').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = this.dataset.officeId;
+                const name = this.dataset.officeName;
+                const deptId = this.dataset.departmentId;
+                const areaId = this.dataset.areaId;
+                
+                document.getElementById('officeModalTitle').innerHTML = '<i class="fas fa-door-open me-2"></i>Edit Office';
+                document.getElementById('officeForm').action = '/devtools/offices/update';
+                document.getElementById('officeId').value = id;
+                document.getElementById('officeName').value = name;
+                document.getElementById('officeDepartment').value = deptId;
+                document.getElementById('officeArea').value = areaId;
+                document.getElementById('officeModal').style.display = 'block';
+            });
+        });
+
+        function openAddOfficeModal() {
+            document.getElementById('officeModalTitle').innerHTML = '<i class="fas fa-door-open me-2"></i>Add Office';
+            document.getElementById('officeForm').action = '/devtools/offices/add';
+            document.getElementById('officeId').value = '';
+            document.getElementById('officeName').value = '';
+            document.getElementById('officeDepartment').value = '';
+            document.getElementById('officeArea').value = '';
+            document.getElementById('officeModal').style.display = 'block';
+        }
+
+        function submitOfficeForm() {
+            const name = document.getElementById('officeName').value;
+            const isEdit = document.getElementById('officeId').value !== '';
+            
+            Swal.fire({
+                title: isEdit ? 'Update Office?' : 'Add Office?',
+                text: `Are you sure you want to ${isEdit ? 'update' : 'add'} "${name}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#E8392F',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, save it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('officeForm').submit();
+                }
+            });
+        }
+
+        function deleteOffice(id, name) {
+            Swal.fire({
+                title: 'Delete Office?',
+                html: `Are you sure you want to delete "<strong>${name}</strong>"?<br><small class="text-danger">This action cannot be undone!</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/devtools/offices/delete';
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'officeId';
+                    input.value = id;
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        function closeOfficeModal() {
+            document.getElementById('officeModal').style.display = 'none';
+        }
+
+        // ========== VIEWER GROUPS ==========
+        function openAddViewerGroupModal() {
+            document.getElementById('viewerGroupModalTitle').innerHTML = '<i class="fas fa-users me-2"></i>Add Viewer Group';
+            document.getElementById('viewerGroupForm').action = '/devtools/viewergroups/add';
+            document.getElementById('viewerGroupId').value = '';
+            document.getElementById('viewerGroupName').value = '';
+            document.getElementById('viewerGroupModal').style.display = 'block';
+        }
+
+        function editViewerGroup(id, name) {
+            document.getElementById('viewerGroupModalTitle').innerHTML = '<i class="fas fa-users me-2"></i>Edit Viewer Group';
+            document.getElementById('viewerGroupForm').action = '/devtools/viewergroups/update';
+            document.getElementById('viewerGroupId').value = id;
+            document.getElementById('viewerGroupName').value = name;
+            document.getElementById('viewerGroupModal').style.display = 'block';
+        }
+
+        function submitViewerGroupForm() {
+            const name = document.getElementById('viewerGroupName').value;
+            const isEdit = document.getElementById('viewerGroupId').value !== '';
+            
+            Swal.fire({
+                title: isEdit ? 'Update Viewer Group?' : 'Add Viewer Group?',
+                text: `Are you sure you want to ${isEdit ? 'update' : 'add'} "${name}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#E8392F',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, save it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('viewerGroupForm').submit();
+                }
+            });
+        }
+
+        function deleteViewerGroup(id, name) {
+            Swal.fire({
+                title: 'Delete Viewer Group?',
+                html: `Are you sure you want to delete "<strong>${name}</strong>"?<br><small class="text-danger">This action cannot be undone!</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/devtools/viewergroups/delete';
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'groupId';
+                    input.value = id;
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        function closeViewerGroupModal() {
+            document.getElementById('viewerGroupModal').style.display = 'none';
+        }
+
+        // ========== DOCUMENT CLASSIFICATIONS ==========
+        function openAddClassificationModal() {
+            document.getElementById('classificationModalTitle').innerHTML = '<i class="fas fa-file-alt me-2"></i>Add Classification';
+            document.getElementById('classificationForm').action = '/devtools/classifications/add';
+            document.getElementById('classificationId').value = '';
+            document.getElementById('classificationName').value = '';
+            document.getElementById('classificationModal').style.display = 'block';
+        }
+
+        function editClassification(id, name) {
+            document.getElementById('classificationModalTitle').innerHTML = '<i class="fas fa-file-alt me-2"></i>Edit Classification';
+            document.getElementById('classificationForm').action = '/devtools/classifications/update';
+            document.getElementById('classificationId').value = id;
+            document.getElementById('classificationName').value = name;
+            document.getElementById('classificationModal').style.display = 'block';
+        }
+
+        function submitClassificationForm() {
+            const name = document.getElementById('classificationName').value;
+            const isEdit = document.getElementById('classificationId').value !== '';
+            
+            Swal.fire({
+                title: isEdit ? 'Update Classification?' : 'Add Classification?',
+                text: `Are you sure you want to ${isEdit ? 'update' : 'add'} "${name}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#E8392F',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, save it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('classificationForm').submit();
+                }
+            });
+        }
+
+        function deleteClassification(id, name) {
+            Swal.fire({
+                title: 'Delete Classification?',
+                html: `Are you sure you want to delete "<strong>${name}</strong>"?<br><small class="text-danger">This action cannot be undone!</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/devtools/classifications/delete';
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'classificationId';
+                    input.value = id;
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        function closeClassificationModal() {
+            document.getElementById('classificationModal').style.display = 'none';
+        }
+
+        // Open reset password modal
+        document.querySelectorAll('.btn-reset-password').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const isAdmin = this.dataset.isAdmin === 'true';
+                
+                if (isAdmin) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Restricted',
+                        text: 'Admin passwords cannot be reset!',
+                        confirmButtonColor: '#E8392F'
+                    });
+                    return;
+                }
+                
+                const userId = this.dataset.userId;
+                const username = this.dataset.username;
+                
+                document.getElementById('resetUserId').value = userId;
+                document.getElementById('resetUsername').textContent = username;
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                document.getElementById('passwordMatchError').style.display = 'none';
+                
+                document.getElementById('resetPasswordModal').style.display = 'block';
+            });
+        });
+
+        // Password confirmation validation
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = this.value;
+            const errorMsg = document.getElementById('passwordMatchError');
+            const submitBtn = document.getElementById('resetPasswordBtn');
+            
+            if (confirmPassword && newPassword !== confirmPassword) {
+                errorMsg.style.display = 'block';
+                submitBtn.disabled = true;
+            } else {
+                errorMsg.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Close reset password modal
+        function closeResetPasswordModal() {
+            document.getElementById('resetPasswordModal').style.display = 'none';
+        }
+
+        // Confirm reset password with SweetAlert
+        function confirmResetPassword() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const username = document.getElementById('resetUsername').textContent;
+
+            if (!newPassword || !confirmPassword) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Information',
+                    text: 'Please fill in all password fields',
+                    confirmButtonColor: '#E8392F'
+                });
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Password Too Short',
+                    text: 'Password must be at least 6 characters',
+                    confirmButtonColor: '#E8392F'
+                });
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Passwords Do Not Match',
+                    text: 'Please make sure both passwords match',
+                    confirmButtonColor: '#E8392F'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Reset Password?',
+                html: `Are you sure you want to reset the password for <strong>${username}</strong>?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#E8392F',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, reset it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('resetPasswordForm').submit();
+                }
+            });
+        }
+
+        // Update window click handler to include reset password modal
+        window.onclick = function(event) {
+            const editModal = document.getElementById('editUserModal');
+            const resetModal = document.getElementById('resetPasswordModal');
+            
+            if (event.target == editModal) {
+                closeEditModal();
+            }
+            if (event.target == resetModal) {
+                closeResetPasswordModal();
+            }
+        }
+    </script>
+
+</div>
+</html>

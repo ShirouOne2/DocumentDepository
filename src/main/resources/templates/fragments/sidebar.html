@@ -1,50 +1,68 @@
-<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<body>
-
 <div th:fragment="main-sidebar" class="l-navbar" id="nav-bar">
     <nav class="nav">
         <div> 
-            <a href="#" class="nav_logo"> 
-                <i class='bx bx-layer nav_logo-icon'></i> 
-                <span class="nav_logo-name">DocDepository</span> 
+            <a href="#" class="nav_logo">
+                <img src="/assets/pstmnIcon.png"
+                     alt="Philpost Icon"
+                     class="sidebar-logo icon-logo">
+
+                <span class="nav_logo-name">
+                    PHIL<span class="logo-red-accent">POST</span>
+                    <div class="logo-subtitle">Document Depository</div>
+                </span>
             </a>
-            
+
             <div class="nav_list"> 
-                <a th:href="@{/dashboard}" class="nav_link"> 
-                    <i class='bx bx-grid-alt nav_icon'></i> 
-                    <span class="nav_name">Dashboard</span> 
-                </a> 
-                <a th:href="@{/files}" class="nav_link"> 
-                    <i class='bx bx-folder nav_icon'></i> 
-                    <span class="nav_name">My Files</span> 
-                </a> 
-                <a th:href="@{/shared}" class="nav_link"> 
-                    <i class='bx bx-share-alt nav_icon'></i> 
-                    <span class="nav_name">Shared Files</span> 
-                </a> 
-                <a th:href="@{/reports}" class="nav_link"> 
-                    <i class='bx bx-bar-chart-alt-2 nav_icon'></i> 
-                    <span class="nav_name">Reports</span> 
-                </a> 
-                <a th:href="@{/settings}" class="nav_link"> 
-                    <i class='bx bx-cog nav_icon'></i> 
-                    <span class="nav_name">Settingg</span> 
-                </a> 
+
+                <a th:href="@{/dashboard}"
+                   class="nav_link"
+                   th:classappend="${activePage == 'dashboard'} ? ' active'">
+                    <i class='bx bx-grid-alt nav_icon'></i>
+                    <span class="nav_name">Dashboard</span>
+                </a>
+
+                <a th:href="@{/uploadpage}"
+                   class="nav_link"
+                   th:classappend="${activePage == 'upload'} ? ' active'">
+                    <i class='bx bx-cloud-upload nav_icon'></i>
+                    <span class="nav_name">Upload</span>
+                </a>
                 
-                <a href="#" class="nav_link" id="openUploadModalBtn"> 
-                    <i class='bx bx-cloud-upload nav_icon'></i> 
-                    <span class="nav_name">Upload</span> 
-                </a> 
+                <a th:href="@{/myfiles}"
+                   class="nav_link"
+                   th:classappend="${activePage == 'myfiles'} ? ' active'">
+                    <i class='bx bx-folder nav_icon'></i>
+                    <span class="nav_name">My Files</span>
+                </a>
+
+                <a th:href="@{/shared}"
+                   class="nav_link"
+                   th:classappend="${activePage == 'shared'} ? ' active'">
+                    <i class='bx bx-share-alt nav_icon'></i>
+                    <span class="nav_name">Shared Files</span>
+                </a>
+
+                <a th:href="@{/settings}"
+                   class="nav_link"
+                   th:classappend="${activePage == 'settings'} ? ' active'">
+                    <i class='bx bx-cog nav_icon'></i>
+                    <span class="nav_name">Settings</span>
+                </a>
+                <a th:if="${isAdmin}"
+                th:href="@{/devtools}"
+                class="nav_link"
+                th:classappend="${activePage == 'devtools'} ? ' active'">
+
+                    <i class="bx bx-wrench nav_icon"></i>
+                    <span class="nav_name">DevTools</span>
+                </a>
+
             </div>
         </div> 
-        
+
         <a th:href="@{/logout}" class="nav_link"> 
             <i class='bx bx-log-out nav_icon'></i> 
-            <span class="nav_name">SignOut</span> 
+            <span class="nav_name">Sign Out</span> 
         </a>
     </nav>
 </div>
-
-</body>
-</html>

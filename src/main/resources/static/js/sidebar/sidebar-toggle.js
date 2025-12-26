@@ -1,36 +1,44 @@
-document.addEventListener("DOMContentLoaded", function(event) {
-    
-    const showNavbar = (toggleId, navId, bodyId, headerId) =>{
-        const toggle = document.getElementById(toggleId),
-        nav = document.getElementById(navId),
-        bodypd = document.getElementById(bodyId),
-        headerpd = document.getElementById(headerId)
+document.addEventListener("DOMContentLoaded", function () {
 
-        // Validate that all variables exist
-        if(toggle && nav && bodypd && headerpd){
-            toggle.addEventListener('click', ()=>{
-                // show navbar
-                nav.classList.toggle('show')
-                // change icon
-                toggle.classList.toggle('bx-x')
-                // add padding to body
-                bodypd.classList.toggle('body-pd')
-                // add padding to header
-                headerpd.classList.toggle('body-pd')
-            })
-        }
+    const toggle = document.getElementById('header-toggle');
+    const nav = document.getElementById('nav-bar');
+    const bodypd = document.getElementById('body-pd');
+    const headerpd = document.getElementById('header');
+
+    if (!toggle || !nav || !bodypd || !headerpd) return;
+
+    /* ===============================
+       RESTORE STATE (DEFAULT = COLLAPSED)
+    =============================== */
+    const savedState = localStorage.getItem('sidebarState');
+
+    if (savedState === 'open') {
+        nav.classList.add('show');
+        bodypd.classList.add('body-pd');
+        headerpd.classList.add('body-pd');
+        toggle.classList.add('bx-x');
+    } else {
+        // collapsed by default
+        nav.classList.remove('show');
+        bodypd.classList.remove('body-pd');
+        headerpd.classList.remove('body-pd');
+        toggle.classList.remove('bx-x');
     }
 
-    showNavbar('header-toggle','nav-bar','body-pd','header')
+    /* ===============================
+       TOGGLE SIDEBAR
+    =============================== */
+    toggle.addEventListener('click', () => {
 
-    /*===== LINK ACTIVE (Redundant due to separate logic, but kept for safety) =====*/
-    const linkColor = document.querySelectorAll('.nav_link')
+        const isOpen = nav.classList.toggle('show');
 
-    function colorLink(){
-        if(linkColor){
-            linkColor.forEach(l=> l.classList.remove('active'))
-            this.classList.add('active')
-        }
-    }
-    linkColor.forEach(l=> l.addEventListener('click', colorLink))
+        bodypd.classList.toggle('body-pd');
+        headerpd.classList.toggle('body-pd');
+        toggle.classList.toggle('bx-x');
+
+        localStorage.setItem(
+            'sidebarState',
+            isOpen ? 'open' : 'collapsed'
+        );
+    });
 });

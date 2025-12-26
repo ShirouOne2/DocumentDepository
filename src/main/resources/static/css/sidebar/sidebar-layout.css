@@ -1,43 +1,79 @@
-@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap");
 
 :root{
+    /* --- Layout Variables --- */
     --header-height: 3rem;
     --nav-width: 68px;
-    --footer-height: 35px; /* New variable for predictable padding */
-    
-    /* --- FRIENDLY BLUE PALETTE --- */
-    --primary-accent: #2C73D2; /* Friendly, approachable blue */
-    --nav-bg: #FFFFFF; /* White sidebar background */
-    --nav-text-color: #495057; /* Dark gray text for contrast */
-    --nav-hover-bg: #e9ecef; /* Light gray hover background */
-    --nav-active-bg: #EAF3FF; /* Very soft light blue background for active state */
-    
-    --white-color: #F7F6FB; /* Light body background */
-    --body-font: 'Lexend', sans-serif;
-    --normal-font-size: 1rem;
+    --footer-height: 25px;
     --z-fixed: 100;
+
+    /* --- FONT & TYPOGRAPHY --- */
+    --body-font: 'Montserrat', sans-serif;
+    --normal-font-size: 1rem;
+    
+    /* --- PHILPOST LIGHT SIDEBAR COLOR PALETTE --- */
+    --primary-accent: #E8392F; /* PhilPost Red/Orange */
+    --logo-secondary-color: #2C73D2; /* A strong, friendly blue */
+    --nav-bg: #FFFFFF;
+    --nav-text-color: #333333;
+    --nav-hover-bg: #F5F5F5;
+    --nav-active-bg: #FCEBEA;
+    --nav-active-text: var(--primary-accent);
+    
+    --white-color: #FFFFFF;
 
     /* Card/Stat styles */
     --secondary-color: #6c757d;
     --card-border-radius: 8px; 
 }
 
-*,::before,::after{box-sizing: border-box}
-body{
-    position: relative;
-    margin: var(--header-height) 0 0 0;
-    padding: 0 1rem;
-    font-family: var(--body-font);
-    font-size: var(--normal-font-size);
-    transition: .5s;
-    background-color: var(--white-color);
-    /* --- CHANGE 1: ADD PADDING TO PREVENT FOOTER OVERLAP --- */
-    padding-bottom: var(--footer-height); 
+:root {
+    /* === TYPOGRAPHY SCALE === */
+    --font-xs: 0.75rem;   /* 12px */
+    --font-sm: 0.85rem;   /* 13.6px */
+    --font-md: 0.95rem;   /* 15.2px */
+    --font-lg: 1.1rem;    /* 17.6px */
+    --font-xl: 1.35rem;   /* 21.6px */
+    --font-xxl: 1.75rem;  /* 28px */
 }
-a{text-decoration: none}
+
+
+/* --- BASE STYLES & RESETS --- */
+*, 
+:before,
+::after {
+    box-sizing: border-box;
+}
+
+body {
+    position: relative;
+    margin: var(--header-height) 0 0 0; /* keep top for header */
+    padding: 0 1rem var(--footer-height) 1rem;
+    font-family: var(--body-font);
+    font-size: var(--font-md);
+    color: #212529;
+    line-height: 1.55;
+    background-color: #F8F9FA;
+}
+
+h1 { font-size: var(--font-xxl); }
+h2 { font-size: var(--font-xl); }
+h3 { font-size: var(--font-lg); }
+h4 { font-size: var(--font-md); }
+h5 { font-size: var(--font-sm); }
+h6 { font-size: var(--font-xs); }
+
+
+a {
+    text-decoration: none;
+}
+
+.height-100 {
+    height: 100vh;
+}
 
 /* --- HEADER STYLES --- */
-.header{
+.header {
     width: 100%;
     height: var(--header-height);
     position: fixed;
@@ -48,72 +84,168 @@ a{text-decoration: none}
     justify-content: space-between;
     padding: 0 1rem;
     background-color: var(--nav-bg);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
     z-index: var(--z-fixed);
-    transition: .5s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-.header_toggle{color: var(--primary-accent);font-size: 1.5rem;cursor: pointer}
-.header_img{width: 35px;height: 35px;display: flex;justify-content: center;border-radius: 50%;overflow: hidden}
-.header_img img{width: 40px}
 
-/* --- NAVBAR STYLES (Light Sidebar) --- */
-.l-navbar{
+.header_toggle {
+    color: var(--primary-accent);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.header_img {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    border-radius: 50%;
+    overflow: hidden;
+}
+.header_img img {
+    width: 40px;
+}
+
+/* --- NAVBAR STYLES (LIGHT-THEMED) --- */
+.l-navbar {
     position: fixed;
     top: 0;
-    left: -30%;
+    left: -30%; 
     width: var(--nav-width);
     height: 100vh;
     background-color: var(--nav-bg);
     padding: .5rem 1rem 0 0;
     transition: .5s;
     z-index: var(--z-fixed);
-    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
 }
-.nav{height: 100%;display: flex;flex-direction: column;justify-content: space-between;overflow: hidden}
-.nav_logo, .nav_link{display: grid;grid-template-columns: max-content max-content;align-items: center;column-gap: 1rem;padding: .5rem 0 .5rem 1.5rem}
-.nav_logo{margin-bottom: 2rem}
 
-/* Logo/Name Text Styling */
-.nav_logo-icon{font-size: 1.25rem;color: var(--primary-accent)}
-.nav_logo-name{color: var(--nav-text-color);font-weight: 700}
+.nav {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+}
 
-/* Link Styling */
-.nav_link{
+/* Logo and Link alignment */
+.nav_logo, 
+.nav_link {
+    display: grid;
+    grid-template-columns: max-content max-content;
+    align-items: left;
+    column-gap: 1rem;
+    padding: .75rem 0 .75rem 1.5rem;
+    border-radius: 0 50px 50px 0;
+}
+
+.nav_logo {
+    margin-bottom: 1.5rem;
+}
+
+/* REMOVED: nav_logo-icon styles are no longer needed, your image is the icon */
+
+/* HIDE THE LOGO TEXT BY DEFAULT (when collapsed) */
+.nav_logo-name {
+    /* Base color is Blue (Applies to 'Phil') */
+    color: var(--logo-secondary-color);
+    font-size: var(--font-md);
+    font-weight: 700;
+    opacity: 0; /* Hidden when collapsed */
+    pointer-events: none; 
+    transition: opacity .3s ease-in-out; 
+}
+
+/* SHOW THE LOGO TEXT when sidebar is expanded */
+.show .nav_logo-name {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Updated logo text color rules */
+.logo-red-accent {
+    color: var(--primary-accent); 
+}
+
+.nav_link {
     position: relative;
     color: var(--nav-text-color);
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
     transition: .3s;
-    border-radius: 4px;
+    font-size: var(--font-sm);
 }
-.nav_link:hover{
-    color: var(--primary-accent);
+
+.nav_link:hover {
     background-color: var(--nav-hover-bg);
+    color: var(--primary-accent);
 }
-.nav_icon{font-size: 1.25rem}
 
-/* Toggle Classes */
-.show{left: 0}
-.body-pd{padding-left: calc(var(--nav-width) + 1rem)}
+.nav_icon {
+    font-size: 1.25rem;
+}
 
-/* --- ACTIVE LINK STYLING (Soft Light Blue Background) --- */
-.active{
-    color: var(--primary-accent) !important;
+/* --- NAVIGATION STATE CLASSES --- */
+.show {
+    left: 0;
+}
+
+.body-pd {
+    padding-left: calc(var(--nav-width) + 1rem);
+}
+
+.active {
     background-color: var(--nav-active-bg);
-    font-weight: 600;
+    color: var(--nav-active-text);
+    font-weight: 700;
 }
-/* Active Indicator Bar */
-.active::before{
+
+/* PHILPOST THEME ACTIVE INDICATOR */
+.active::before {
     content: '';
     position: absolute;
     left: 0;
-    width: 2px;
-    height: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 32px; /* 🔥 FIX */
     background-color: var(--primary-accent);
+    border-radius: 2px;
 }
 
-.height-100{height:100vh}
+.active:hover {
+    color: var(--nav-active-text);
+    background-color: var(--nav-active-bg);
+}
 
-/* --- DASHBOARD CARD STYLING --- */
+.active .nav_icon {
+    color: var(--nav-active-text);
+}
+
+/* --- SIDEBAR LOGO STYLES (Your image size is defined here) --- */
+.sidebar-logo {
+    /* Reduced size to fit better within the 68px width of the collapsed sidebar */
+    width: 25px; 
+    height: 25px; 
+    /* This ensures the image is scaled down to fit within the box without distortion */
+    object-fit: contain; 
+    display: block; 
+    margin: auto auto; /* Ensure it's centered horizontally in the collapsed view */
+}
+.logo-subtitle {
+    font-size: var(--font-xs); /* Make it significantly smaller */
+    font-weight: 500; /* Medium weight, less bold than the main logo */
+    color: #000000; /* Set the color to black */
+    margin-top: -3px; /* Slightly pull it up closer to the main logo text */
+    /* Ensure it's hidden when the sidebar is collapsed */
+    display: none;
+}
+
+/* Make sure the subtitle shows when the sidebar is expanded */
+.show .nav_logo-name .logo-subtitle {
+    display: block;
+}
+
+/* --- DASHBOARD CARD STYLING (rest of the CSS is the same) --- */
 .card {
     border-radius: var(--card-border-radius); 
     border: none;
@@ -128,81 +260,77 @@ a{text-decoration: none}
 }
 
 .stats-card .card-title {
+    font-size: var(--font-xxl);
     font-weight: 700;
-    font-size: 2rem; 
     color: var(--primary-accent);
     margin-bottom: 0;
 }
 
 .card-title-text {
+    font-size: var(--font-xs);
     font-weight: 600;
-    color: var(--secondary-color);
-    margin-bottom: 0.25rem;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    font-size: 0.8rem;
+    color: var(--secondary-color);
 }
 
 .card-icon i {
     font-size: 2.5rem;
-    color: rgba(44, 115, 210, 0.2); 
+    color: rgba(232, 57, 47, 0.2); 
 }
 
-/* --- FIXED FOOTER STYLES (NEW BLOCK) --- */
+/* --- FIXED FOOTER STYLES --- */
 .fixed-app-footer {
-    width: 100%;
-    position: fixed; /* Lock to viewport */
+    position: fixed;
     bottom: 0;
     left: 0;
+    width: 100%;
+    height: var(--footer-height);
+    background-color: #fff;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.03);
+    line-height: var(--footer-height); /* vertically center text */
+    padding: 0 1rem;
     z-index: 90;
-    background-color: var(--nav-bg); /* Use white for background */
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.03); /* Subtle shadow on top edge */
+    display: flex;
+    align-items: center; /* vertically center content */
+    justify-content: center; 
+}
+.main-content {
+    min-height: calc(100vh - var(--header-height) - var(--footer-height));
+}
+.page-title {
+    font-size: var(--font-xl);
+    font-weight: 700;
+    margin-bottom: 0;
 }
 
-/* --- MEDIA QUERIES --- */
-@media screen and (min-width: 768px){
-    body{
+
+
+/* --- MEDIA QUERIES (DESKTOP) --- */
+@media screen and (min-width: 768px) {
+    body {
         margin: calc(var(--header-height) + 1rem) 0 0 0;
         padding-left: calc(var(--nav-width) + 2rem);
-        /* --- CHANGE 2: MAINTAIN PADDING FOR FOOTER ON DESKTOP --- */
-        padding-bottom: var(--footer-height); 
     }
-    .header{
+    .header {
         height: calc(var(--header-height) + 1rem);
-        padding: 0 2rem 0 calc(var(--nav-width) + 2rem)
+        padding: 0 2rem 0 calc(var(--nav-width) + 2rem);
     }
     .header_img {
-        width: 130px; 
-        height: 130px;
-        overflow: hidden; 
-        
-        display: flex; 
-        align-items: center; 
-        justify-content: center;
+        width: 40px;
+        height: 40px;
     }
-    
     .header_img img {
-        max-width: 100%; 
-        max-height: 100%; 
-        
-        height: auto; 
-        width: auto;
+        width: 45px;
     }
-    .l-navbar{left: 0;padding: 1rem 1rem 0 0}
-    
-    /* Expanded Sidebar State */
-    .show{width: calc(var(--nav-width) + 156px)}
-    /* Body Padding when Sidebar is Expanded */
-    .body-pd{padding-left: calc(var(--nav-width) + 188px)}
-
-    /* Adjust fixed footer to respect the permanent desktop sidebar */
-    .fixed-app-footer {
-        width: calc(100% - var(--nav-width)); /* Take up the remaining width */
-        left: var(--nav-width); /* Start where the sidebar ends (closed state) */
+    .l-navbar {
+        left: 0;
+        padding: 1rem 1rem 0 0;
     }
-    
-    /* Adjust fixed footer when sidebar is expanded */
-    .body-pd .fixed-app-footer {
-        width: calc(100% - (var(--nav-width) + 156px)); /* Expanded sidebar width */
-        left: calc(var(--nav-width) + 156px);
+    .show {
+        width: calc(var(--nav-width) + 156px);
+    }
+    .body-pd {
+        padding-left: calc(var(--nav-width) + 188px);
     }
 }

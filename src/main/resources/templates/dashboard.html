@@ -2,69 +2,560 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
       th:replace="layout/main-layout :: document('Dashboard Overview', ~{::content})">
 
-<!-- Page Content -->
 <div th:fragment="content">
-    <div>
-        <h4>Dashboard Overview</h4>
-        <p>Welcome to your Document Depository dashboard. Here you can manage your files.</p>
-    
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card stats-card">
-                    <div class="card-body">
-                        <div>
-                            <p class="card-title-text">Total Uploads</p>
-                            <h5 class="card-title">2</h5>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* === STAT CARDS === */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .stat-icon {
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.red {
+            background: rgba(232, 57, 47, 0.1);
+            color: #E8392F;
+        }
+
+        .stat-icon.blue {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .stat-icon.green {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .stat-icon.purple {
+            background: rgba(168, 85, 247, 0.1);
+            color: #a855f7;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        /* === SECTION CARD === */
+        .section-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header {
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            color: white;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-body {
+            padding: 0;
+        }
+
+        /* === RECENT UPLOADS === */
+        .recent-uploads-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .upload-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background 0.2s;
+        }
+
+        .upload-item:last-child {
+            border-bottom: none;
+        }
+
+        .upload-item:hover {
+            background: #fef2f2;
+        }
+
+        .upload-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(232, 57, 47, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: #E8392F;
+        }
+
+        .upload-details {
+            flex: 1;
+        }
+
+        .upload-title {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .upload-meta {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .upload-time {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            white-space: nowrap;
+        }
+
+        /* === CHART/DISTRIBUTION === */
+        .distribution-body {
+            padding: 1.5rem;
+        }
+
+        .distribution-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .distribution-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .distribution-label {
+            flex: 1;
+            font-size: 0.875rem;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .distribution-count {
+            font-weight: 600;
+            color: #E8392F;
+            margin-right: 1rem;
+        }
+
+        .distribution-bar {
+            flex: 2;
+            height: 8px;
+            background: #f3f4f6;
+            overflow: hidden;
+        }
+
+        .distribution-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #E8392F 0%, #cf2f27 100%);
+            transition: width 0.3s ease;
+        }
+
+        /* === AUDIT LOG === */
+        .audit-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .audit-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .audit-item:last-child {
+            border-bottom: none;
+        }
+
+        .audit-item:hover {
+            background: #fef2f2;
+        }
+
+        .audit-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-right: 1rem;
+        }
+
+        .audit-details {
+            flex: 1;
+        }
+
+        .audit-user {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.875rem;
+        }
+
+        .audit-info {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .audit-time {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        /* === QUICK ACTIONS === */
+        .quick-actions-body {
+            padding: 1.5rem;
+        }
+
+        .quick-action {
+            display: block;
+            padding: 0.875rem 1rem;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            margin-bottom: 0.75rem;
+        }
+
+        .quick-action:last-child {
+            margin-bottom: 0;
+        }
+
+        .quick-action:hover {
+            background: #fef2f2;
+            border-color: #E8392F;
+            color: #E8392F;
+            transform: translateX(4px);
+        }
+
+        .quick-action i {
+            margin-right: 0.5rem;
+            color: #E8392F;
+        }
+
+        /* === EMPTY STATE === */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* === RESPONSIVE === */
+        @media (min-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .content-grid {
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        .badge-online {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            margin-right: 0.5rem;
+        }
+
+        /* Scrollbar styling */
+        .recent-uploads-body::-webkit-scrollbar,
+        .audit-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .recent-uploads-body::-webkit-scrollbar-track,
+        .audit-body::-webkit-scrollbar-track {
+            background: #f3f4f6;
+        }
+
+        .recent-uploads-body::-webkit-scrollbar-thumb,
+        .audit-body::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+        }
+
+        .recent-uploads-body::-webkit-scrollbar-thumb:hover,
+        .audit-body::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+
+    <!-- WELCOME BANNER -->
+    <div class="section-card">
+        <div class="section-header">
+            <div>
+                <i class="fas fa-chart-line me-2"></i>
+                <span>Welcome back, <strong th:text="${currentUser.username}">User</strong>!</span>
+            </div>
+            <div>
+                <i class="far fa-calendar me-2"></i>
+                <span th:text="${#temporals.format(#temporals.createNow(), 'MMMM dd, yyyy')}">December 23, 2024</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATISTICS CARDS -->
+    <div class="stats-grid">
+        <!-- Total Uploads -->
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-value" th:text="${totalUploads}">0</div>
+                    <div class="stat-label">Total Documents</div>
+                </div>
+                <div class="stat-icon red">
+                    <i class="bx bx-file"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Uploads -->
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-value" th:text="${uploadsToday}">0</div>
+                    <div class="stat-label">Uploaded Today</div>
+                </div>
+                <div class="stat-icon blue">
+                    <i class="bx bx-upload"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Online Users -->
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-value">
+                        <span th:text="${onlineUsers}">0</span>
+                        <span style="font-size: 1rem; color: #6b7280;">/</span>
+                        <span style="font-size: 1rem; color: #6b7280;" th:text="${totalUsers}">0</span>
+                    </div>
+                    <div class="stat-label">
+                        <span class="badge-online"></span>Users Online
+                    </div>
+                </div>
+                <div class="stat-icon green">
+                    <i class="bx bx-user-check"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Uploads (For Users) / Total Users (For Admin) -->
+        <div class="stat-card" th:if="${!isAdmin}">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-value" th:text="${myUploads}">0</div>
+                    <div class="stat-label">My Uploads</div>
+                </div>
+                <div class="stat-icon purple">
+                    <i class="bx bx-user"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card" th:if="${isAdmin}">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-value" th:text="${totalUsers}">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-icon purple">
+                    <i class="bx bx-group"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT GRID -->
+    <div class="content-grid">
+        
+        <!-- LEFT COLUMN -->
+        <div>
+            <!-- RECENT UPLOADS -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span><i class="fas fa-clock me-2"></i>Recent Uploads</span>
+                </div>
+                <div class="section-body recent-uploads-body">
+                    <div th:if="${#lists.isEmpty(recentUploads)}" class="empty-state">
+                        <i class="bx bx-file"></i>
+                        <p>No documents uploaded yet</p>
+                    </div>
+                    <div th:if="${!#lists.isEmpty(recentUploads)}">
+                        <div class="upload-item" th:each="doc : ${recentUploads}">
+                            <div class="upload-icon">
+                                <i class="bx bx-file"></i>
+                            </div>
+                            <div class="upload-details">
+                                <div class="upload-title" th:text="${doc.title}">Document Title</div>
+                                <div class="upload-meta">
+                                    <i class="fas fa-user me-1"></i>
+                                    <span th:text="${doc.uploadedBy}">User</span>
+                                    <span class="mx-2">•</span>
+                                    <i class="fas fa-tag me-1"></i>
+                                    <span th:text="${doc.classification}">Type</span>
+                                </div>
+                            </div>
+                            <div class="upload-time" 
+                                 th:text="${doc.uploadDate != null ? #temporals.format(doc.uploadDate, 'MMM dd, HH:mm') : 'Unknown'}">
+                                Just now
+                            </div>
                         </div>
-                        <div class="card-icon"><i class="bx bx-data"></i></div>
                     </div>
                 </div>
             </div>
-    
-            <div class="col-md-4">
-                <div class="card stats-card">
-                    <div class="card-body">
-                        <div>
-                            <p class="card-title-text">Documents Today</p>
-                            <h5 class="card-title">25</h5>
-                        </div>
-                        <div class="card-icon"><i class="bx bx-file"></i></div>
-                    </div>
+
+            <!-- DOCUMENT DISTRIBUTION -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span><i class="fas fa-chart-pie me-2"></i>Document Distribution</span>
                 </div>
-            </div>
-    
-            <div class="col-md-4">
-                <div class="card stats-card">
-                    <div class="card-body">
-                        <div>
-                            <p class="card-title-text">Pending Reviews</p>
-                            <h5 class="card-title">3</h5>
+                <div class="section-body distribution-body">
+                    <div th:if="${#lists.isEmpty(documentsByClassification)}" class="empty-state">
+                        <i class="bx bx-pie-chart-alt"></i>
+                        <p>No data available</p>
+                    </div>
+                    <div th:if="${!#lists.isEmpty(documentsByClassification)}">
+                        <div class="distribution-item" th:each="item : ${documentsByClassification}">
+                            <div class="distribution-label" th:text="${item.name}">Classification</div>
+                            <div class="distribution-count" th:text="${item.count}">0</div>
+                            <div class="distribution-bar">
+                                <div class="distribution-fill" 
+                                     th:style="'width: ' + ${(item.count * 100.0 / totalUploads)} + '%'"></div>
+                            </div>
                         </div>
-                        <div class="card-icon"><i class="bx bx-time-five"></i></div>
                     </div>
                 </div>
             </div>
         </div>
-    
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <p class="card-title-text">Recent Activity</p>
-    
-                        <div class="activity-content">
-                            <p>Display recent uploads, downloads, or system notifications here.</p>
-                            <ul>
-                                <li>Uploaded "Project_Report_v2.pdf" by John Doe - 2 hours ago</li>
-                                <li>Downloaded "Client_Contract.docx" by Jane Smith - yesterday</li>
-                            </ul>
+
+        <!-- RIGHT COLUMN -->
+        <div>
+            <!-- QUICK ACTIONS -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span><i class="fas fa-bolt me-2"></i>Quick Actions</span>
+                </div>
+                <div class="section-body quick-actions-body">
+                    <a th:href="@{/uploadpage}" class="quick-action">
+                        <i class="bx bx-upload"></i>Upload Document
+                    </a>
+                    <a th:href="@{/myfiles}" class="quick-action">
+                        <i class="bx bx-folder"></i>My Documents
+                    </a>
+                    <a th:href="@{/shared}" class="quick-action">
+                        <i class="bx bx-search"></i>Search Documents
+                    </a>
+                    <a th:href="@{/settings}" class="quick-action">
+                        <i class="bx bx-cog"></i>Settings
+                    </a>
+                    <a th:if="${isAdmin}" th:href="@{/devtools}" class="quick-action">
+                        <i class="bx bx-wrench"></i>Developer Tools
+                    </a>
+                </div>
+            </div>
+
+            <!-- ADMIN: AUDIT LOG -->
+            <div th:if="${isAdmin}" class="section-card">
+                <div class="section-header">
+                    <span><i class="fas fa-history me-2"></i>Recent Activity</span>
+                </div>
+                <div class="section-body audit-body">
+                    <div th:if="${#lists.isEmpty(auditLog)}" class="empty-state">
+                        <i class="bx bx-history"></i>
+                        <p>No activity recorded</p>
+                    </div>
+                    <div th:if="${!#lists.isEmpty(auditLog)}">
+                        <div class="audit-item" th:each="log : ${auditLog}">
+                            <div class="audit-avatar" th:text="${#strings.substring(log.username, 0, 1).toUpperCase()}">U</div>
+                            <div class="audit-details">
+                                <div class="audit-user" th:text="${log.username}">Username</div>
+                                <div class="audit-info">
+                                    <span th:text="${log.position}">Position</span> • 
+                                    <span th:text="${log.office}">Office</span>
+                                </div>
+                            </div>
+                            <div class="audit-time" th:text="${#temporals.format(log.lastLogin, 'MMM dd HH:mm')}">
+                                Recent
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-</div>
 
+</div>
 </html>
