@@ -1,0 +1,740 @@
+/* ========================================
+   DEVTOOLS COMPLETE STYLES
+   Document Management System - Admin Panel
+   ======================================== */
+
+/* ========================================
+   TAB NAVIGATION
+   ======================================== */
+
+   .devtools-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    background: #f1f3f5;
+    border: 1px solid #e5e7eb;
+    border-bottom: none;
+    padding: 0.5rem 0.5rem 0;
+    border-radius: 8px 8px 0 0;
+}
+
+.devtools-tab {
+    padding: 0.55rem 1.1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6c757d;
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.devtools-tab:hover {
+    color: #E8392F;
+    background: #fff;
+}
+
+.devtools-tab.active {
+    color: #E8392F;
+    background: #fff;
+    border-color: #e5e7eb;
+    border-bottom-color: #fff;
+    position: relative;
+    bottom: -1px;
+    z-index: 1;
+}
+
+.devtools-tab-body {
+    border: 1px solid #e5e7eb;
+    border-radius: 0 0 8px 8px;
+    background: #fff;
+}
+
+.devtools-panel {
+    display: none;
+}
+
+.devtools-panel.active {
+    display: block;
+}
+
+/* ========================================
+   CONTAINER STYLES
+   ======================================== */
+
+.user-management-container {
+    border: 1px solid #e5e7eb;
+    background-color: #fff;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    margin-bottom: 2rem;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.user-management-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+    border-bottom: 1px solid #dee2e6;
+}
+
+.user-management-header h4,
+.user-management-header i {
+    margin: 0;
+    color: #fff;
+    font-weight: 700;
+}
+
+.user-management-body {
+    padding: 2rem;
+}
+
+/* ========================================
+   FORM SECTIONS
+   ======================================== */
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #495057;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #E8392F;
+    display: inline-block;
+}
+
+/* ========================================
+   SEARCH BAR
+   ======================================== */
+
+.search-bar {
+    max-width: 400px;
+}
+
+.search-bar .form-control {
+    border-color: #e5e7eb;
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+
+.search-bar .form-control:focus {
+    border-color: #E8392F;
+    box-shadow: 0 0 0 0.2rem rgba(232, 57, 47, 0.15);
+    outline: none;
+}
+
+.search-bar .form-control::placeholder {
+    color: #adb5bd;
+}
+
+/* ========================================
+   TABLE STYLES
+   ======================================== */
+
+.table-responsive {
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+table {
+    margin-bottom: 0;
+}
+
+table thead th {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #495057;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    padding: 1rem 0.75rem;
+    white-space: nowrap;
+}
+
+table tbody td {
+    font-size: 0.85rem;
+    vertical-align: middle;
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+table tbody tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+
+/* ========================================
+   USER INFO STYLES
+   ======================================== */
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.75rem;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-username {
+    font-weight: 600;
+    color: #495057;
+    line-height: 1.2;
+}
+
+/* ========================================
+   BADGE STYLES
+   ======================================== */
+
+.badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    font-weight: 600;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-admin {
+    background-color: #E8392F;
+    color: white;
+}
+
+.badge-user {
+    background-color: #6c757d;
+    color: white;
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+/* ========================================
+   BUTTON STYLES
+   ======================================== */
+
+.btn {
+    border-radius: 4px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(232, 57, 47, 0.25);
+}
+
+.btn-sm {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+}
+
+.btn-primary {
+    background-color: #E8392F;
+    border-color: #E8392F;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #cf2f27;
+    border-color: #cf2f27;
+    color: white;
+}
+
+.btn-primary:disabled {
+    background-color: #f8b4af;
+    border-color: #f8b4af;
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+    color: white;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+    color: white;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+    color: white;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
+    color: #212529;
+}
+
+.btn-outline-primary {
+    border: 1px solid #E8392F;
+    color: #E8392F;
+    background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+    background-color: #E8392F;
+    color: white;
+}
+
+.btn-outline-warning {
+    border: 1px solid #ffc107;
+    color: #ffc107;
+    background-color: transparent;
+}
+
+.btn-outline-warning:hover {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.btn-outline-danger {
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    background-color: transparent;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* ========================================
+   MODAL STYLES
+   ======================================== */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    /* No pointer-events on backdrop — clicking outside does nothing */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 0;
+    border: 1px solid #888;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 90%;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+.close {
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1;
+}
+
+.close:hover,
+.close:focus {
+    color: #f8f9fa;
+    text-decoration: none;
+    outline: none;
+}
+
+/* ========================================
+   FORM STYLES
+   ======================================== */
+
+.form-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control,
+.form-select {
+    font-size: 0.875rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    width: 100%;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #E8392F;
+    box-shadow: 0 0 0 0.2rem rgba(232, 57, 47, 0.15);
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: #adb5bd;
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    padding-right: 2.5rem;
+}
+
+.form-text {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.form-text.text-muted {
+    color: #6c757d;
+}
+
+.form-text.text-danger {
+    color: #dc3545;
+}
+
+/* ========================================
+   ALERT STYLES
+   ======================================== */
+
+.alert {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.alert i {
+    margin-right: 0.5rem;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffe69c;
+    color: #856404;
+    font-size: 0.85rem;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+    font-size: 0.85rem;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+    font-size: 0.85rem;
+}
+
+.alert-dismissible {
+    padding-right: 3rem;
+    position: relative;
+}
+
+.btn-close {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+    color: inherit;
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+.btn-close:hover {
+    opacity: 0.75;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.mb-0 { margin-bottom: 0 !important; }
+.mb-3 { margin-bottom: 1rem !important; }
+.mt-4 { margin-top: 1.5rem !important; }
+.me-1 { margin-right: 0.25rem !important; }
+.me-2 { margin-right: 0.5rem !important; }
+.d-flex { display: flex !important; }
+.justify-content-between { justify-content: space-between !important; }
+.justify-content-end { justify-content: flex-end !important; }
+.align-items-center { align-items: center !important; }
+.gap-2 { gap: 0.5rem !important; }
+.text-center { text-align: center !important; }
+.text-danger { color: #dc3545 !important; }
+.text-muted { color: #6c757d !important; }
+.fade { transition: opacity 0.15s linear; }
+.fade.show { opacity: 1; }
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 768px) {
+    .devtools-tabs {
+        gap: 0.15rem;
+        padding: 0.4rem 0.4rem 0;
+    }
+
+    .devtools-tab {
+        font-size: 0.7rem;
+        padding: 0.4rem 0.7rem;
+    }
+
+    .user-management-body {
+        padding: 1rem;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+
+    .search-bar {
+        max-width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .d-flex.justify-content-between > * {
+        width: 100%;
+    }
+
+    .table-responsive {
+        font-size: 0.75rem;
+    }
+
+    table thead th,
+    table tbody td {
+        padding: 0.5rem;
+        font-size: 0.7rem;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .modal-content {
+        width: 98%;
+        margin: 2% auto;
+    }
+
+    .modal-body {
+        padding: 1rem;
+        max-height: calc(100vh - 150px);
+    }
+
+    .user-management-header {
+        padding: 1rem;
+    }
+
+    .user-management-header h4 {
+        font-size: 1rem;
+    }
+}
+
+/* ========================================
+   SCROLLBAR STYLES
+   ======================================== */
+
+.modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: #E8392F;
+    border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    background: #cf2f27;
+}
+
+/* ========================================
+   ANIMATION UTILITIES
+   ======================================== */
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+    .btn, .modal, .alert, .devtools-tabs {
+        display: none !important;
+    }
+
+    .devtools-panel {
+        display: block !important;
+    }
+
+    .user-management-container {
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+
+    .user-management-header {
+        background: #fff !important;
+        color: #000 !important;
+        border-bottom: 2px solid #000;
+    }
+
+    .user-management-header h4 {
+        color: #000 !important;
+    }
+}
+
+/*devtools.css*/

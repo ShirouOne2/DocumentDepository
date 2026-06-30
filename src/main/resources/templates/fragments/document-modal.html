@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="documentModal(isAdmin, pageMode, classifications, customViewerGroups, offices, departments)">
+
+    <div id="documentViewerModal" class="modal">
+        <div class="modal-content">
+
+            <!-- Header -->
+            <div class="modal-header">
+                <h2>
+                    <i class="fas fa-file-alt"></i>
+                    <span id="modalDocTitle">Document Title</span>
+
+                    <span th:if="${pageMode == 'archived'}"
+                          class="badge bg-warning ms-2">
+                        <i class="fas fa-archive"></i> Archived
+                    </span>
+
+                    <span th:if="${pageMode == 'archived'}"
+                          id="modalBrokenBadge"
+                          class="badge bg-danger ms-2"
+                          style="display:none;">
+                        <i class="fas fa-unlink"></i> Broken Link
+                    </span>
+                </h2>
+                <span class="close" onclick="closeDocumentModal()">&times;</span>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+
+                <!-- Broken-link alert -->
+                <div th:if="${pageMode == 'archived'}"
+                     id="brokenLinkAlert"
+                     class="alert alert-danger"
+                     style="display:none;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>File Not Found:</strong> The physical file for this document is
+                    missing from storage. View and Download are disabled.
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="viewer-actions">
+
+                    <button id="btnViewModal"
+                            class="btn btn-primary"
+                            onclick="viewDocumentNewTab()">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+
+                    <button id="btnDownloadModal"
+                            class="btn btn-secondary"
+                            onclick="downloadDocument()">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+
+                    <button th:if="${pageMode != 'archived'}"
+                            id="btnArchiveModal"
+                            class="btn btn-warning"
+                            onclick="archiveDocument()"
+                            style="display:none;">
+                        <i class="fas fa-archive"></i> Archive
+                    </button>
+
+                    <button th:if="${pageMode != 'archived'}"
+                            id="btnUploadVersionModal"
+                            class="btn btn-warning"
+                            onclick="openUploadVersionModal()"
+                            style="display:none;">
+                        <i class="fas fa-upload"></i> Upload New Version
+                    </button>
+
+                    <button th:if="${pageMode == 'archived'}"
+                            id="btnRestoreModal"
+                            class="btn btn-success"
+                            onclick="restoreDocumentFromModal()"
+                            style="display:none;">
+                        <i class="fas fa-undo"></i> Restore
+                    </button>
+
+                </div>
+
+                <!-- DOCUMENT INFORMATION -->
+                <div class="document-info">
+                    <h3>
+                        <i class="fas fa-info-circle me-2"></i>Document Information
+
+                        <span th:if="${pageMode != 'archived'}">
+                            <button id="btnEditMode"
+                                    class="btn btn-sm ms-2 app-btn-edit"
+                                    onclick="toggleEditMode()"
+                                    style="display:none;">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button id="btnSaveChanges"
+                                    class="btn btn-sm ms-2 app-btn-save"
+                                    onclick="saveDocumentChanges()"
+                                    style="display:none;">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                            <button id="btnCancelEdit"
+                                    class="btn btn-sm ms-2 app-btn-cancel"
+                                    onclick="cancelEditMode()"
+                                    style="display:none;">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                        </span>
+                    </h3>
+
+                    <table class="info-table">
+
+                        <tr th:if="${pageMode == 'archived'}">
+                            <td>File Status</td>
+                            <td id="infoFileStatus">-</td>
+                        </tr>
+
+                        <tr>
+                            <td>Filename</td>
+                            <td id="infoFilename">-</td>
+                        </tr>
+                        <tr>
+                            <td>Uploaded By</td>
+                            <td id="infoUploadedBy">-</td>
+                        </tr>
+                        <tr>
+                            <td>Upload Date</td>
+                            <td id="infoUploadDate">-</td>
+                        </tr>
+
+                        <tr th:if="${pageMode == 'archived'}">
+                            <td>Archived Date</td>
+                            <td id="infoArchivedDate">-</td>
+                        </tr>
+                        <tr th:if="${pageMode == 'archived'}">
+                            <td>Archived By</td>
+                            <td id="infoArchivedBy">-</td>
+                        </tr>
+
+                        <!-- DTS Number -->
+                        <tr>
+                            <td>DTS No.</td>
+                            <td>
+                                <span id="infoDtsNumber" class="view-mode">-</span>
+                                <input th:if="${pageMode != 'archived'}"
+                                       type="text"
+                                       id="editDtsNumber"
+                                       class="form-control form-control-sm edit-mode"
+                                       style="display:none;"
+                                       placeholder="e.g. DTS-2024-001 (optional)">
+                            </td>
+                        </tr>
+
+                        <!-- Classification -->
+                        <tr>
+                            <td>Classification</td>
+                            <td>
+                                <span id="infoClassification" class="view-mode">-</span>
+                                <select th:if="${pageMode != 'archived'}"
+                                        id="editClassification"
+                                        class="form-control form-control-sm edit-mode"
+                                        style="display:none;"
+                                        onchange="toggleContractDatesEdit()">
+                                    <option value="">Select Classification</option>
+                                    <option th:each="c : ${classifications}"
+                                            th:value="${c.id}"
+                                            th:text="${c.name}">
+                                    </option>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <!-- Tags -->
+                        <tr>
+                            <td>Tags</td>
+                            <td>
+                                <div id="infoTags" class="view-mode">-</div>
+                                <div th:if="${pageMode != 'archived'}"
+                                     class="edit-mode"
+                                     style="display:none;">
+                                    <input type="text"
+                                           id="editTags"
+                                           class="form-control form-control-sm"
+                                           placeholder="Comma-separated tags (e.g. budget, 2024, annual)">
+                                    <small class="text-muted">Separate tags with commas</small>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Shared With / Viewer Group -->
+                        <tr>
+                            <td>Shared With</td>
+                            <td>
+                                <span id="infoViewerGroup" class="view-mode">-</span>
+                                <div th:if="${pageMode != 'archived'}"
+                                     class="edit-mode"
+                                     style="display:none;">
+                                    <select id="editViewerGroup"
+                                            class="form-control form-control-sm"
+                                            onchange="toggleCustomGroupEdit()">
+
+                                        <!-- Admin: sees all options -->
+                                        <th:block th:if="${isAdmin}">
+                                            <option value="1">Public / Everyone</option>
+                                            <option value="2">Area</option>
+                                            <option value="3">Office</option>
+                                            <option value="4">Department</option>
+                                            <option value="5">Custom Group</option>
+                                        </th:block>
+
+                                        <!-- Non-admin: only Office and Department -->
+                                        <th:block th:if="${!isAdmin}">
+                                            <option value="3">Office</option>
+                                            <option value="4">Department</option>
+                                        </th:block>
+
+                                    </select>
+
+                                    <!-- Custom group picker — admin only -->
+                                    <div th:if="${isAdmin}"
+                                         id="editCustomGroupContainer"
+                                         style="display:none; margin-top:10px;">
+                                        <select id="editCustomGroup"
+                                                class="form-control form-control-sm">
+                                            <option value="">Select Custom Group</option>
+                                            <option th:each="group : ${customViewerGroups}"
+                                                    th:value="${group.groupId}"
+                                                    th:text="${group.groupName + ' (' + group.memberCount + ' members)'}">
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <small id="deptWarning"
+                                           class="text-warning"
+                                           style="display:none;">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        The uploader is not assigned to a department.
+                                        "Department" sharing is unavailable for this document.
+                                    </small>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Target Org rows — view mode, visible to all -->
+                        <tr>
+                            <td>Target Area</td>
+                            <td id="infoTargetArea">-</td>
+                        </tr>
+                        <tr>
+                            <td>Target Office</td>
+                            <td>
+                                <span id="infoTargetOffice" class="view-mode">-</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Target Department</td>
+                            <td>
+                                <span id="infoTargetDepartment" class="view-mode">-</span>
+                            </td>
+                        </tr>
+
+                        <!-- Admin-only edit block for target org -->
+                        <tr th:if="${isAdmin and pageMode != 'archived'}"
+                            id="editTargetOrgBlock"
+                            style="display:none;">
+                            <td colspan="2">
+                                <div style="background:#fffbf0;border:1px solid #fde68a;
+                                            border-radius:0.5rem;padding:0.85rem 1rem;">
+
+                                    <div style="font-size:0.7rem;font-weight:700;
+                                                color:#92400e;text-transform:uppercase;
+                                                margin-bottom:0.6rem;">
+                                        <i class="fas fa-crosshairs me-1"></i>
+                                        Target Audience
+                                        <span style="font-size:0.65rem;background:#fef3c7;
+                                                     color:#92400e;border:1px solid #fde68a;
+                                                     padding:0.1rem 0.4rem;border-radius:20px;
+                                                     margin-left:0.4rem;">
+                                            <i class="fas fa-crown me-1"></i>Admin Only
+                                        </span>
+                                    </div>
+
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label"
+                                                   style="font-size:0.72rem;font-weight:600;
+                                                          text-transform:uppercase;color:#495057;">
+                                                Target Office
+                                            </label>
+                                            <select id="editTargetOffice"
+                                                    class="form-control form-control-sm"
+                                                    onchange="onModalTargetOfficeChange()">
+                                                <option value="">-- Keep current --</option>
+                                                <option th:each="office : ${offices}"
+                                                        th:value="${office.officeId}"
+                                                        th:text="${office.officeName + ' (' + office.area.name + ')'}">
+                                                </option>
+                                            </select>
+                                            <small class="text-muted" style="font-size:0.65rem;">
+                                                Area is derived automatically.
+                                            </small>
+                                        </div>
+
+                                        <div class="col-md-6" id="editTargetDeptCol" style="display:none;">
+                                            <label class="form-label"
+                                                   style="font-size:0.72rem;font-weight:600;
+                                                          text-transform:uppercase;color:#495057;">
+                                                Target Department
+                                            </label>
+                                            <select id="editTargetDept"
+                                                    class="form-control form-control-sm"
+                                                    onchange="_applyViewerGroupEditState()">
+                                                <option value="">-- Entire office --</option>
+                                            </select>
+                                            <small class="text-muted" style="font-size:0.65rem;">
+                                                Leave blank to share with the whole office.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Description -->
+                        <tr>
+                            <td>Description</td>
+                            <td>
+                                <div id="infoDescription" class="view-mode">-</div>
+                                <textarea th:if="${pageMode != 'archived'}"
+                                          id="editDescription"
+                                          class="form-control form-control-sm edit-mode"
+                                          rows="3"
+                                          style="display:none;"
+                                          placeholder="Enter document description">
+                                </textarea>
+                            </td>
+                        </tr>
+
+                        <!-- ══════════════════════════════════════════════════════
+                             CONTRACT DATES — shown/hidden based on classification
+                             ══════════════════════════════════════════════════════ -->
+
+                        <!-- View mode row (always rendered, JS shows/hides) -->
+                        <tr id="rowContractStart" style="display:none;">
+                            <td>
+                                <i class="fas fa-calendar-check me-1" style="color:#1e40af;"></i>
+                                Contract Start
+                            </td>
+                            <td>
+                                <span id="infoContractStart" class="view-mode">-</span>
+                                <input th:if="${pageMode != 'archived'}"
+                                       type="date"
+                                       id="editContractStart"
+                                       class="form-control form-control-sm edit-mode"
+                                       style="display:none;">
+                            </td>
+                        </tr>
+
+                        <tr id="rowContractEnd" style="display:none;">
+                            <td>
+                                <i class="fas fa-calendar-times me-1" style="color:#991b1b;"></i>
+                                Contract End
+                            </td>
+                            <td>
+                                <span id="infoContractEnd" class="view-mode">-</span>
+                                <input th:if="${pageMode != 'archived'}"
+                                       type="date"
+                                       id="editContractEnd"
+                                       class="form-control form-control-sm edit-mode"
+                                       style="display:none;">
+                            </td>
+                        </tr>
+
+                        <!-- Contract status badge (view-mode only, auto-computed) -->
+                        <tr id="rowContractStatus" style="display:none;">
+                            <td>Contract Status</td>
+                            <td id="infoContractStatus">-</td>
+                        </tr>
+
+                    </table>
+                </div>
+
+                <!-- COMMENTS -->
+                <div class="comments-section">
+                    <h3>
+                        <i class="fas fa-comments me-2"></i>
+                        Comments (<span id="commentCount">0</span>)
+                        <span th:if="${pageMode == 'archived'}"
+                              class="badge bg-secondary ms-2"
+                              style="font-size:0.7rem;">Read-only</span>
+                    </h3>
+
+                    <div th:if="${pageMode != 'archived'}" class="add-comment">
+                        <textarea id="commentText"
+                                  rows="3"
+                                  placeholder="Add a comment..."></textarea>
+                        <button onclick="addComment()">
+                            <i class="fas fa-paper-plane"></i> Post Comment
+                        </button>
+                    </div>
+
+                    <div th:if="${pageMode == 'archived'}" class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Comments are read-only for archived documents.
+                    </div>
+
+                    <div id="commentsList"></div>
+                </div>
+
+                <!-- VERSION HISTORY -->
+                <div th:if="${pageMode != 'archived'}"
+                     id="versionHistorySection"
+                     class="version-history"
+                     style="display:none;">
+                    <h3>
+                        <i class="fas fa-code-branch me-2"></i>
+                        Version History (<span id="versionCount">0</span>)
+                    </h3>
+                    <div id="versionHistoryList" class="version-list"></div>
+                </div>
+
+            </div><!-- /.modal-body -->
+        </div><!-- /.modal-content -->
+    </div><!-- /#documentViewerModal -->
+
+
+    <!-- UPLOAD NEW VERSION MODAL -->
+    <div th:if="${pageMode != 'archived'}"
+         id="uploadVersionModal"
+         class="modal"
+         style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-upload"></i> Upload New Version</h2>
+                <span class="close" onclick="closeUploadVersionModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="uploadVersionForm">
+                    <input type="hidden" id="versionDocumentId">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select New File *</label>
+                        <input type="file"
+                               class="form-control"
+                               id="versionFile"
+                               accept=".pdf,.doc,.docx,.xlsx,.xls,.txt,.jpg,.png"
+                               required>
+                        <small class="text-muted">
+                            This file replaces the current version. The old version will be archived.
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Version Notes (Optional)</label>
+                        <textarea class="form-control"
+                                  id="versionNotes"
+                                  rows="3"
+                                  placeholder="What changed? (e.g. 'Updated budget figures', 'Fixed typos')">
+                        </textarea>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Title, description, tags, and access permissions
+                        will remain unchanged.
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button"
+                                class="btn btn-secondary"
+                                onclick="closeUploadVersionModal()">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Upload New Version
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pre-load departments for admin target-org editing -->
+    <script th:if="${isAdmin and pageMode != 'archived'}" th:inline="javascript">
+    /*<![CDATA[*/
+    window.modalDepartments = {};
+    /*[# th:each="dept : ${departments}"]*/
+    (function() {
+        var offId = /*[[${dept.office != null ? dept.office.officeId : null}]]*/ null;
+        if (offId == null) return;
+        if (!window.modalDepartments[offId]) window.modalDepartments[offId] = [];
+        window.modalDepartments[offId].push({
+            id  : /*[[${dept.id}]]*/ 0,
+            name: /*[[${dept.name}]]*/ ''
+        });
+    })();
+    /*[/]*/
+    /*]]>*/
+    </script>
+
+    <style>
+        /* ── Contract status badges ─────────────────────────────────── */
+        .contract-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .contract-status-active {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+        .contract-status-expiring {
+            background: #fef9c3;
+            color: #854d0e;
+            border: 1px solid #fde047;
+        }
+        .contract-status-expired {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .contract-status-future {
+            background: #e0f2fe;
+            color: #075985;
+            border: 1px solid #7dd3fc;
+        }
+    </style>
+
+    <script>
+        /* ════════════════════════════════════════════════════════════════
+           CONTRACT DATE HELPERS — used by document-modal.js
+           ════════════════════════════════════════════════════════════════ */
+
+        /**
+         * Call this after the modal data is loaded.
+         * Populates the contract rows and shows/hides them.
+         *
+         * @param {string|null} classificationName  e.g. "Contract", "MOA", "Service Contract"
+         * @param {string|null} contractStartDate   ISO date string (yyyy-MM-dd) or null
+         * @param {string|null} contractEndDate     ISO date string (yyyy-MM-dd) or null
+         */
+        function populateContractDates(classificationName, contractStartDate, contractEndDate) {
+            const isContract = classificationName
+                ? classificationName.toLowerCase().includes('contract')
+                : false;
+
+            const rowStart  = document.getElementById('rowContractStart');
+            const rowEnd    = document.getElementById('rowContractEnd');
+            const rowStatus = document.getElementById('rowContractStatus');
+
+            if (!rowStart) return; // safety guard
+
+            if (!isContract) {
+                rowStart.style.display  = 'none';
+                rowEnd.style.display    = 'none';
+                rowStatus.style.display = 'none';
+                return;
+            }
+
+            // Show rows
+            rowStart.style.display  = '';
+            rowEnd.style.display    = '';
+            rowStatus.style.display = '';
+
+            // Populate view-mode spans
+            const fmt = d => d ? d.substring(0, 10) : '—';  // show yyyy-MM-dd
+            document.getElementById('infoContractStart').textContent = contractStartDate ? fmt(contractStartDate) : '—';
+            document.getElementById('infoContractEnd').textContent   = contractEndDate   ? fmt(contractEndDate)   : '—';
+
+            // Populate edit-mode inputs
+            const editStart = document.getElementById('editContractStart');
+            const editEnd   = document.getElementById('editContractEnd');
+            if (editStart) editStart.value = contractStartDate ? fmt(contractStartDate) : '';
+            if (editEnd)   editEnd.value   = contractEndDate   ? fmt(contractEndDate)   : '';
+
+            // Compute and display contract status
+            document.getElementById('infoContractStatus').innerHTML =
+                computeContractStatusBadge(contractStartDate, contractEndDate);
+        }
+
+        /**
+         * Returns an HTML badge string reflecting the contract's current status.
+         * Expiring = end date within 30 days from today.
+         */
+        function computeContractStatusBadge(startStr, endStr) {
+            if (!startStr || !endStr) {
+                return '<span class="contract-status-badge" style="background:#f3f4f6;color:#6b7280;border:1px solid #d1d5db;">No dates set</span>';
+            }
+
+            const today  = new Date(); today.setHours(0,0,0,0);
+            const start  = new Date(startStr);
+            const end    = new Date(endStr);
+            const soon   = new Date(today); soon.setDate(soon.getDate() + 30);
+
+            if (today < start) {
+                return `<span class="contract-status-badge contract-status-future">
+                            <i class="fas fa-clock"></i> Not yet effective
+                        </span>`;
+            }
+            if (today > end) {
+                return `<span class="contract-status-badge contract-status-expired">
+                            <i class="fas fa-times-circle"></i> Expired
+                        </span>`;
+            }
+            if (end <= soon) {
+                const daysLeft = Math.ceil((end - today) / 86400000);
+                return `<span class="contract-status-badge contract-status-expiring">
+                            <i class="fas fa-exclamation-triangle"></i> Expiring in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}
+                        </span>`;
+            }
+            return `<span class="contract-status-badge contract-status-active">
+                        <i class="fas fa-check-circle"></i> Active
+                    </span>`;
+        }
+
+        /**
+         * Called by the Classification <select> onchange in edit mode.
+         * Shows/hides the contract date edit rows based on the selected classification name.
+         */
+        function toggleContractDatesEdit() {
+            const sel = document.getElementById('editClassification');
+            if (!sel) return;
+            const selectedText = sel.options[sel.selectedIndex]?.text || '';
+            const isContract   = selectedText.toLowerCase().includes('contract');
+
+            const rowStart  = document.getElementById('rowContractStart');
+            const rowEnd    = document.getElementById('rowContractEnd');
+            const rowStatus = document.getElementById('rowContractStatus');
+
+            if (rowStart)  rowStart.style.display  = isContract ? '' : 'none';
+            if (rowEnd)    rowEnd.style.display    = isContract ? '' : 'none';
+            if (rowStatus) rowStatus.style.display = isContract ? '' : 'none';
+
+            if (!isContract) {
+                const editStart = document.getElementById('editContractStart');
+                const editEnd   = document.getElementById('editContractEnd');
+                if (editStart) editStart.value = '';
+                if (editEnd)   editEnd.value   = '';
+            }
+        }
+
+        /**
+         * Reads the current contract edit values and validates them.
+         * Returns { valid: true, startDate, endDate } or { valid: false, message }.
+         * Pass isContract=true only when the selected classification is a contract.
+         */
+        function validateContractDatesEdit(isContract) {
+            if (!isContract) return { valid: true, startDate: null, endDate: null };
+
+            const startVal = (document.getElementById('editContractStart')?.value || '').trim();
+            const endVal   = (document.getElementById('editContractEnd')?.value   || '').trim();
+
+            if (!startVal || !endVal) {
+                return { valid: false, message: 'Please fill in both Contract Start Date and Contract End Date.' };
+            }
+            if (endVal < startVal) {
+                return { valid: false, message: 'Contract End Date cannot be earlier than the Start Date.' };
+            }
+            return { valid: true, startDate: startVal, endDate: endVal };
+        }
+    </script>
+
+</div><!-- /th:fragment root -->
+</html>

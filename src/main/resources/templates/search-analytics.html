@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main-layout :: document('Search Analytics', ~{::content})}">
+
+<div th:fragment="content">
+
+    <style>
+        .analytics-container {
+            border: 1px solid #e5e7eb;
+            background-color: #fff;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+        }
+
+        .analytics-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .analytics-header h4,
+        .analytics-header i {
+            margin: 0;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .analytics-body {
+            padding: 2rem;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .analytics-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+
+        .analytics-card h5 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #E8392F;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #fcebea;
+        }
+
+        .keyword-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .keyword-item:hover {
+            background: #fcebea;
+            transform: translateX(4px);
+        }
+
+        .keyword-rank {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .keyword-text {
+            flex: 1;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .keyword-count {
+            font-size: 0.75rem;
+            color: #6c757d;
+            background: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <div class="analytics-container">
+        <div class="analytics-header">
+            <h4><i class="fas fa-chart-bar me-2"></i>Search Analytics</h4>
+        </div>
+
+        <div class="analytics-body">
+            <div class="analytics-grid">
+                <!-- Most Searched Keywords (Global) -->
+                <div class="analytics-card">
+                    <h5>
+                        <i class="fas fa-globe me-2"></i>Most Searched Keywords (All Users)
+                    </h5>
+                    
+                    <div th:if="${!#lists.isEmpty(mostSearchedGlobal)}">
+                        <div class="keyword-item" th:each="item, iter : ${mostSearchedGlobal}">
+                            <div class="keyword-rank" th:text="${iter.index + 1}">1</div>
+                            <div class="keyword-text" th:text="${item.keyword}">Keyword</div>
+                            <div class="keyword-count">
+                                <span th:text="${item.count}">0</span> searches
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(mostSearchedGlobal)}" class="empty-state">
+                        <i class="bx bx-search"></i>
+                        <p>No search data available yet</p>
+                    </div>
+                </div>
+
+                <!-- Trending Searches (Last 7 Days) -->
+                <div class="analytics-card">
+                    <h5>
+                        <i class="fas fa-fire me-2"></i>Trending Searches (Last 7 Days)
+                    </h5>
+                    
+                    <div th:if="${!#lists.isEmpty(trendingSearches)}">
+                        <div class="keyword-item" th:each="item, iter : ${trendingSearches}">
+                            <div class="keyword-rank" th:text="${iter.index + 1}">1</div>
+                            <div class="keyword-text" th:text="${item.keyword}">Keyword</div>
+                            <div class="keyword-count">
+                                <span th:text="${item.count}">0</span> searches
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(trendingSearches)}" class="empty-state">
+                        <i class="bx bx-trending-up"></i>
+                        <p>No trending searches in the last 7 days</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Note:</strong> Search analytics are collected from user searches in "My Files" and "Shared Files" sections.
+                Data is updated in real-time as users search for documents.
+            </div>
+        </div>
+    </div>
+
+</div>
+</html>

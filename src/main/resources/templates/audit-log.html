@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main-layout :: document('Audit Log', ~{::content})}">
+
+<div th:fragment="content">
+
+    <style>
+        /* ── Stats row ── */
+        .audit-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .audit-stat-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,.04);
+        }
+
+        .audit-stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            line-height: 1;
+        }
+
+        .audit-stat-label {
+            font-size: 0.78rem;
+            color: #6b7280;
+            font-weight: 500;
+            margin-top: .35rem;
+        }
+
+        .audit-stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+        }
+
+        .icon-red    { background: rgba(232,57,47,.1);  color: #E8392F; }
+        .icon-blue   { background: rgba(59,130,246,.1); color: #3b82f6; }
+        .icon-green  { background: rgba(34,197,94,.1);  color: #22c55e; }
+        .icon-purple { background: rgba(139,92,246,.1); color: #8b5cf6; }
+
+        /* ── Main container ── */
+        .audit-container {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,.05);
+            overflow: hidden;
+        }
+
+        .audit-header {
+            padding: 1.25rem 1.5rem;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .audit-header h4 {
+            margin: 0;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        /* ── Filter bar ── */
+        .filter-bar {
+            padding: 1.25rem 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .filter-bar .form-control,
+        .filter-bar .form-select {
+            font-size: 0.8rem;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: .4rem .65rem;
+        }
+
+        .filter-bar .form-control:focus,
+        .filter-bar .form-select:focus {
+            border-color: #E8392F;
+            box-shadow: 0 0 0 .18rem rgba(232,57,47,.18);
+        }
+
+        .filter-bar label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: .3rem;
+        }
+
+        .btn-search {
+            background: #E8392F;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: .45rem 1rem;
+            transition: background .2s;
+        }
+
+        .btn-search:hover { background: #cf2f27; color: #fff; }
+
+        .btn-reset {
+            background: #6c757d;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: .45rem 1rem;
+            text-decoration: none;
+            transition: background .2s;
+            display: inline-block;
+        }
+
+        .btn-reset:hover { background: #5a6268; color: #fff; }
+
+        /* ── Table ── */
+        .audit-table-wrap {
+            overflow-x: auto;
+        }
+
+        .audit-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .audit-table thead th {
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: .85rem .9rem;
+            white-space: nowrap;
+        }
+
+        .audit-table tbody tr {
+            border-bottom: 1px solid #f0f0f0;
+            transition: background .15s;
+        }
+
+        .audit-table tbody tr:nth-child(even) {
+            background: #fff5f4;
+        }
+
+        .audit-table tbody tr:hover {
+            background: #fcebea;
+        }
+
+        .audit-table tbody td {
+            padding: .7rem .9rem;
+            vertical-align: middle;
+            color: #374151;
+        }
+
+        /* ── User avatar ── */
+        .user-avatar-sm {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .username-cell {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+        /* ── Action badges ── */
+        .action-badge {
+            display: inline-block;
+            padding: .2rem .55rem;
+            border-radius: 99px;
+            font-size: .68rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .badge-login    { background: #d1fae5; color: #065f46; }
+        .badge-logout   { background: #e0e7ff; color: #3730a3; }
+        .badge-timeout  { background: #fef3c7; color: #92400e; }
+        .badge-upload   { background: #dbeafe; color: #1e40af; }
+        .badge-view     { background: #f3f4f6; color: #374151; }
+        .badge-download { background: #ede9fe; color: #5b21b6; }
+        .badge-edit     { background: #fef9c3; color: #854d0e; }
+        .badge-delete   { background: #fee2e2; color: #991b1b; }
+        .badge-archive  { background: #fce7f3; color: #9d174d; }
+        .badge-comment  { background: #ecfdf5; color: #065f46; }
+        .badge-share    { background: #e0f2fe; color: #0369a1; }
+        .badge-action   { background: #f3f4f6; color: #6b7280; }
+
+        /* ── IP address cell ── */
+        .ip-cell {
+            font-family: monospace;
+            font-size: .75rem;
+            color: #4b5563;
+            white-space: nowrap;
+        }
+
+        /* ── Endpoint cell ── */
+        .endpoint-cell {
+            font-family: monospace;
+            font-size: .72rem;
+            color: #6b7280;
+            max-width: 260px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ── Timestamp ── */
+        .ts-main { font-weight: 600; color: #1f2937; white-space: nowrap; }
+        .ts-sub  { font-size: .68rem; color: #9ca3af; }
+
+        /* ── Active filter chips ── */
+        .active-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem;
+            padding: .75rem 1.5rem;
+            background: #fffbf9;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            background: #fcebea;
+            color: #E8392F;
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: .2rem .6rem;
+            border-radius: 99px;
+        }
+
+        /* ── Pagination ── */
+        .pagination-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .pagination-info {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .pagination {
+            display: flex;
+            gap: .25rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            height: 34px;
+            padding: .25rem .6rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #495057;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all .18s;
+        }
+
+        .page-link:hover { background: #fcebea; border-color: #E8392F; color: #E8392F; }
+        .page-item.active .page-link { background: #E8392F; border-color: #E8392F; color: #fff; font-weight: 700; }
+        .page-item.disabled .page-link { color: #adb5bd; pointer-events: none; background: #f8f9fa; }
+
+        /* ── Empty state ── */
+        .empty-audit {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #9ca3af;
+        }
+
+        .empty-audit i { font-size: 2.5rem; margin-bottom: .75rem; display: block; opacity: .5; }
+    </style>
+
+    <!-- ── Stats Row ── -->
+    <div class="audit-stats">
+        <div class="audit-stat-card">
+            <div>
+                <div class="audit-stat-value" th:text="${totalUsers}">0</div>
+                <div class="audit-stat-label">Total Users</div>
+            </div>
+            <div class="audit-stat-icon icon-red"><i class="bx bx-group"></i></div>
+        </div>
+        <div class="audit-stat-card">
+            <div>
+                <div class="audit-stat-value" th:text="${activeToday}">0</div>
+                <div class="audit-stat-label">Active Users Today</div>
+            </div>
+            <div class="audit-stat-icon icon-green"><i class="bx bx-user-check"></i></div>
+        </div>
+        <div class="audit-stat-card">
+            <div>
+                <div class="audit-stat-value" th:text="${activeWeek}">0</div>
+                <div class="audit-stat-label">Active This Week</div>
+            </div>
+            <div class="audit-stat-icon icon-blue"><i class="bx bx-calendar-check"></i></div>
+        </div>
+        <div class="audit-stat-card">
+            <div>
+                <div class="audit-stat-value" th:text="${totalItems}">0</div>
+                <div class="audit-stat-label">Matching Log Entries</div>
+            </div>
+            <div class="audit-stat-icon icon-purple"><i class="bx bx-list-ul"></i></div>
+        </div>
+    </div>
+
+    <!-- ── Main Card ── -->
+    <div class="audit-container">
+
+        <div class="audit-header">
+            <h4><i class="fas fa-history me-2"></i>Activity Audit Log</h4>
+            <span style="color:rgba(255,255,255,.75); font-size:.8rem;">
+                Login · Logout · Views · Downloads · Uploads &amp; More
+            </span>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <form th:action="@{/admin/audit-log}" method="get">
+                <div class="row g-2 align-items-end">
+
+                    <div class="col-md-3">
+                        <label>Username</label>
+                        <input type="text"
+                               name="username"
+                               class="form-control"
+                               th:value="${username}"
+                               placeholder="Search username...">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label>Action Type</label>
+                        <select name="action" class="form-select">
+                            <option value="" th:selected="${action == null or action == ''}">All Actions</option>
+                            <option value="LOGIN"    th:selected="${action == 'LOGIN'}">Login</option>
+                            <option value="LOGOUT"   th:selected="${action == 'LOGOUT'}">Logout</option>
+                            <option value="TIMEOUT"  th:selected="${action == 'TIMEOUT'}">Timeout</option>
+                            <option value="GET"      th:selected="${action == 'GET'}">GET (View)</option>
+                            <option value="POST"     th:selected="${action == 'POST'}">POST (Action)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label>From Date</label>
+                        <input type="date"
+                               name="startDate"
+                               class="form-control"
+                               th:value="${startDate}">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label>To Date</label>
+                        <input type="date"
+                               name="endDate"
+                               class="form-control"
+                               th:value="${endDate}">
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn-search flex-fill">
+                                <i class="fas fa-search me-1"></i>Filter
+                            </button>
+                            <a th:href="@{/admin/audit-log}" class="btn-reset flex-fill text-center">
+                                Reset
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <!-- Active filter chips -->
+        <div class="active-filters"
+             th:if="${(username != null and !username.isEmpty()) or
+                      (action != null and !action.isEmpty()) or
+                      (startDate != null and !startDate.isEmpty()) or
+                      (endDate != null and !endDate.isEmpty())}">
+            <span style="font-size:.72rem; color:#6b7280; align-self:center;">Active filters:</span>
+            <span class="filter-chip" th:if="${username != null and !username.isEmpty()}">
+                <i class="fas fa-user"></i> <span th:text="${username}"></span>
+            </span>
+            <span class="filter-chip" th:if="${action != null and !action.isEmpty()}">
+                <i class="fas fa-bolt"></i> <span th:text="${action}"></span>
+            </span>
+            <span class="filter-chip" th:if="${startDate != null and !startDate.isEmpty()}">
+                <i class="fas fa-calendar"></i> From: <span th:text="${startDate}"></span>
+            </span>
+            <span class="filter-chip" th:if="${endDate != null and !endDate.isEmpty()}">
+                <i class="fas fa-calendar"></i> To: <span th:text="${endDate}"></span>
+            </span>
+        </div>
+
+        <!-- Table -->
+        <div class="audit-table-wrap">
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Endpoint</th>
+                        <th>IP Address</th>
+                        <th>Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr th:if="${#lists.isEmpty(auditLogs)}">
+                        <td colspan="6">
+                            <div class="empty-audit">
+                                <i class="bx bx-search-alt"></i>
+                                <p style="font-weight:600;">No log entries found</p>
+                                <p style="font-size:.8rem;">Try adjusting your filters</p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr th:each="log, stat : ${auditLogs}">
+
+                        <!-- Row number -->
+                        <td th:text="${(currentPage * 25) + stat.index + 1}"
+                            style="color:#9ca3af; font-weight:600; width:48px;">
+                        </td>
+
+                        <!-- User -->
+                        <td>
+                            <div class="username-cell">
+                                <div class="user-avatar-sm"
+                                     th:text="${#strings.substring(log.username, 0, 1).toUpperCase()}">
+                                </div>
+                                <span style="font-weight:600; color:#1f2937;" th:text="${log.username}"></span>
+                            </div>
+                        </td>
+
+                        <!-- Action badge -->
+                        <td>
+                            <!--/* Map action string to badge class + label */-->
+                            <th:block th:with="
+                                act=${log.action},
+                                ep=${log.endpoint != null ? log.endpoint.toLowerCase() : ''},
+                                label=${
+                                    act == 'LOGIN'   ? 'LOGIN' :
+                                    act == 'LOGOUT'  ? 'LOGOUT' :
+                                    act == 'TIMEOUT' ? 'TIMEOUT' :
+                                    (act == 'GET' and #strings.contains(ep, '/documents/view/'))     ? 'VIEW DOC' :
+                                    (act == 'GET' and #strings.contains(ep, '/documents/details/'))  ? 'VIEW DETAILS' :
+                                    (act == 'GET' and #strings.contains(ep, '/documents/download/')) ? 'DOWNLOAD' :
+                                    (act == 'GET' and #strings.contains(ep, '/myfiles'))              ? 'BROWSE FILES' :
+                                    (act == 'GET' and #strings.contains(ep, '/shared'))               ? 'BROWSE SHARED' :
+                                    (act == 'POST' and #strings.contains(ep, '/save'))                ? 'UPLOAD' :
+                                    (act == 'POST' and #strings.contains(ep, '/archive'))             ? 'ARCHIVE' :
+                                    (act == 'POST' and #strings.contains(ep, '/update'))              ? 'EDIT' :
+                                    (act == 'POST' and #strings.contains(ep, '/comments'))            ? 'COMMENT' :
+                                    (act == 'POST' and #strings.contains(ep, '/share'))               ? 'SHARE' :
+                                    (act == 'POST' and #strings.contains(ep, '/restore'))             ? 'RESTORE' :
+                                    (act == 'DELETE')                                                  ? 'DELETE' :
+                                    act
+                                },
+                                cls=${
+                                    act == 'LOGIN'   ? 'badge-login' :
+                                    act == 'LOGOUT'  ? 'badge-logout' :
+                                    act == 'TIMEOUT' ? 'badge-timeout' :
+                                    (act == 'GET' and #strings.contains(ep, '/documents/download/')) ? 'badge-download' :
+                                    (act == 'GET')                                                    ? 'badge-view' :
+                                    (act == 'POST' and #strings.contains(ep, '/save'))                ? 'badge-upload' :
+                                    (act == 'POST' and #strings.contains(ep, '/archive'))             ? 'badge-archive' :
+                                    (act == 'POST' and #strings.contains(ep, '/update'))              ? 'badge-edit' :
+                                    (act == 'POST' and #strings.contains(ep, '/comments'))            ? 'badge-comment' :
+                                    (act == 'POST' and #strings.contains(ep, '/share'))               ? 'badge-share' :
+                                    (act == 'DELETE')                                                  ? 'badge-delete' :
+                                    'badge-action'
+                                }
+                            ">
+                                <span class="action-badge" th:classappend="${cls}" th:text="${label}"></span>
+                            </th:block>
+                        </td>
+
+                        <!-- Endpoint -->
+                        <td>
+                            <span class="endpoint-cell"
+                                  th:text="${log.endpoint != null ? log.endpoint : '—'}"
+                                  th:title="${log.endpoint}">
+                            </span>
+                        </td>
+
+                        <!-- IP Address -->
+                        <td>
+                            <span class="ip-cell"
+                                  th:text="${log.ipAddress != null ? log.ipAddress : '—'}">
+                            </span>
+                        </td>
+
+                        <!-- Timestamp -->
+                        <td>
+                            <div class="ts-main"
+                                 th:text="${#temporals.format(log.timestamp, 'MMM dd, yyyy')}">
+                            </div>
+                            <div class="ts-sub"
+                                 th:text="${#temporals.format(log.timestamp, 'HH:mm:ss')}">
+                            </div>
+                        </td>
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-wrap" th:if="${totalPages > 0}">
+            <div class="pagination-info">
+                Page <strong th:text="${currentPage + 1}">1</strong>
+                of <strong th:text="${totalPages}">1</strong>
+                &nbsp;•&nbsp;
+                <span th:text="${totalItems}">0</span> total entries
+            </div>
+            <ul class="pagination">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/audit-log(page=0,username=${username},action=${action},startDate=${startDate},endDate=${endDate})}">
+                        <i class="bx bx-chevrons-left"></i>
+                    </a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/audit-log(page=${currentPage - 1},username=${username},action=${action},startDate=${startDate},endDate=${endDate})}">
+                        <i class="bx bx-chevron-left"></i>
+                    </a>
+                </li>
+                <th:block th:each="i : ${#numbers.sequence(
+                    T(java.lang.Math).max(0, currentPage - 2),
+                    T(java.lang.Math).min(totalPages - 1, currentPage + 2)
+                )}">
+                    <li class="page-item" th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link"
+                           th:href="@{/admin/audit-log(page=${i},username=${username},action=${action},startDate=${startDate},endDate=${endDate})}"
+                           th:text="${i + 1}">1</a>
+                    </li>
+                </th:block>
+                <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/audit-log(page=${currentPage + 1},username=${username},action=${action},startDate=${startDate},endDate=${endDate})}">
+                        <i class="bx bx-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/audit-log(page=${totalPages - 1},username=${username},action=${action},startDate=${startDate},endDate=${endDate})}">
+                        <i class="bx bx-chevrons-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+</div>
+</html>

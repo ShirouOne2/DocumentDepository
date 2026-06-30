@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main-layout :: document('Custom Viewer Groups', ~{::content})}">
+
+<div th:fragment="content">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        .groups-container {
+            border: 1px solid #e5e7eb;
+            background-color: #fff;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+            border-radius: 8px;
+        }
+
+        .groups-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            border-bottom: 1px solid #dee2e6;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .groups-header h4 {
+            margin: 0;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .groups-body {
+            padding: 2rem;
+        }
+
+        .group-card {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .group-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        .group-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .group-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 0.25rem;
+        }
+
+        .group-description {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .group-meta {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.75rem;
+            color: #6c757d;
+            padding-top: 1rem;
+            border-top: 1px solid #f1f3f5;
+        }
+
+        .group-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge-members {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .group-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #E8392F;
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(232, 57, 47, 0.15);
+        }
+
+        textarea.form-control {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .member-selector {
+            max-height: 220px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 0.75rem;
+        }
+
+        .member-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        .member-item label {
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+            font-size: 0.875rem;
+        }
+
+        .member-item input[type="checkbox"] {
+            margin-right: 0.75rem;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #E8392F;
+            border-color: #E8392F;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #cf2f27;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .search-box {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        /* ── Member tabs ─────────────────────────────────────── */
+        .member-tabs {
+            display: flex;
+            gap: 0;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .member-tab-btn {
+            flex: 1;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: none;
+            background: #f8f9fa;
+            color: #6c757d;
+            cursor: pointer;
+            border-right: 1px solid #dee2e6;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .member-tab-btn:last-child { border-right: none; }
+
+        .member-tab-btn.active {
+            background: #E8392F;
+            color: #fff;
+        }
+
+        .member-tab-btn:hover:not(.active) {
+            background: #e9ecef;
+            color: #212529;
+        }
+
+        /* ── Bulk-add panel ──────────────────────────────────── */
+        .bulk-panel {
+            display: none;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 0.75rem;
+        }
+
+        .bulk-panel .bulk-select {
+            width: 100%;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.82rem;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .bulk-panel .bulk-select:focus {
+            border-color: #E8392F;
+            outline: none;
+        }
+
+        .bulk-preview {
+            max-height: 160px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background: #fff;
+            padding: 0.4rem 0.6rem;
+            margin-top: 0.5rem;
+            font-size: 0.82rem;
+        }
+
+        .bulk-preview-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #f1f3f5;
+        }
+
+        .bulk-preview-row:last-child { border-bottom: none; }
+
+        .bulk-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 0.6rem;
+        }
+
+        .bulk-count {
+            font-size: 0.78rem;
+            color: #6c757d;
+        }
+
+        .btn-add-all {
+            background: #E8392F;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 0.35rem 0.9rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-add-all:disabled {
+            background: #adb5bd;
+            cursor: default;
+        }
+
+        .badge-added {
+            font-size: 0.7rem;
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+            border-radius: 10px;
+            padding: 0.1rem 0.5rem;
+        }
+
+        .btn-add-one {
+            font-size: 0.72rem;
+            padding: 0.1rem 0.45rem;
+            border: 1px solid #E8392F;
+            color: #E8392F;
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-add-one:hover { background: #E8392F; color: #fff; }
+    </style>
+
+    <div class="groups-container">
+        <div class="groups-header">
+            <h4>
+                <i class="fas fa-users-cog me-2"></i>Custom Viewer Groups
+            </h4>
+        </div>
+
+        <div class="groups-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <p class="text-muted mb-0" style="font-size: 0.875rem;">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Create custom groups to control document visibility
+                    </p>
+                </div>
+                <button class="btn btn-primary" onclick="openCreateModal()">
+                    <i class="fas fa-plus me-2"></i>Create New Group
+                </button>
+            </div>
+
+            <div th:if="${#lists.isEmpty(groups)}" class="empty-state">
+                <i class="bx bx-group"></i>
+                <h5>No Custom Groups Yet</h5>
+                <p>Create your first custom viewer group to get started</p>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(groups)}">
+                <div class="group-card" th:each="group : ${groups}">
+                    <div class="group-card-header">
+                        <div style="flex: 1;">
+                            <div class="group-title" th:text="${group.groupName}">Group Name</div>
+                            <div class="group-description" th:text="${group.description ?: 'No description'}">
+                                Description
+                            </div>
+                            <span class="badge-members">
+                                <i class="fas fa-users me-1"></i>
+                                <span th:text="${group.memberCount}">0</span> members
+                            </span>
+                        </div>
+                        <div class="group-actions">
+                            <button class="btn btn-sm btn-outline-primary"
+                                    th:data-group-id="${group.groupId}"
+                                    onclick="openEditModal(this.dataset.groupId)"
+                                    title="Edit group">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger"
+                                    th:data-group-id="${group.groupId}"
+                                    th:data-group-name="${group.groupName}"
+                                    onclick="deleteGroup(this.dataset.groupId, this.dataset.groupName)"
+                                    title="Delete group">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="group-meta">
+                        <div class="group-meta-item">
+                            <i class="fas fa-user"></i>
+                            <span>Created by: <strong th:text="${group.createdBy.username}">Admin</strong></span>
+                        </div>
+                        <div class="group-meta-item">
+                            <i class="fas fa-calendar"></i>
+                            <span th:text="${#temporals.format(group.createdAt, 'MMM dd, yyyy')}">Date</span>
+                        </div>
+                        <div class="group-meta-item">
+                            <i class="fas fa-circle" 
+                               th:classappend="${group.isActive ? 'text-success' : 'text-danger'}"></i>
+                            <span th:text="${group.isActive ? 'Active' : 'Inactive'}">Status</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Modal -->
+    <div id="groupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Create Custom Viewer Group</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="groupForm">
+                    <input type="hidden" id="groupId">
+
+                    <div class="form-group">
+                        <label class="form-label">Group Name *</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="groupName" 
+                               placeholder="Enter group name"
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" 
+                                  id="description" 
+                                  placeholder="Enter group description (optional)"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Members
+                            <span id="selectedCount" class="badge-members ms-2" style="display:none;">0 selected</span>
+                        </label>
+
+                        <!-- Tab bar -->
+                        <div class="member-tabs">
+                            <button type="button" class="member-tab-btn active" data-tab="individual" onclick="switchMemberTab('individual')">
+                                <i class="fas fa-user me-1"></i> Individual
+                            </button>
+                            <button type="button" class="member-tab-btn" data-tab="area" onclick="switchMemberTab('area')">
+                                <i class="fas fa-map-marker-alt me-1"></i> By Area
+                            </button>
+                            <button type="button" class="member-tab-btn" data-tab="office" onclick="switchMemberTab('office')">
+                                <i class="fas fa-building me-1"></i> By Office
+                            </button>
+                            <button type="button" class="member-tab-btn" data-tab="department" onclick="switchMemberTab('department')">
+                                <i class="fas fa-sitemap me-1"></i> By Department
+                            </button>
+                        </div>
+
+                        <!-- Individual tab -->
+                        <div id="tab-individual">
+                            <input type="text" 
+                                   class="search-box" 
+                                   id="memberSearch" 
+                                   placeholder="Search users...">
+                            <div class="member-selector" id="memberList">
+                                <div class="member-item" th:each="user : ${allUsers}">
+                                    <input type="checkbox" 
+                                           th:id="'user-' + ${user.userId}"
+                                           th:value="${user.userId}"
+                                           name="members"
+                                           onchange="updateSelectedCount()">
+                                    <label th:for="'user-' + ${user.userId}">
+                                        <strong th:text="${user.username}">Username</strong>
+                                        <span class="text-muted" style="font-size: 0.75rem;">
+                                            - <span th:text="${user.office.officeName}">Office</span>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- By Area tab -->
+                        <div id="tab-area" class="bulk-panel">
+                            <select class="bulk-select" id="bulkAreaSelect" onchange="refreshBulkPreview('area')">
+                                <option value="">— Select an Area —</option>
+                            </select>
+                            <div class="bulk-preview" id="bulkAreaPreview">
+                                <span class="text-muted" style="font-size:0.82rem;">Select an area to preview users.</span>
+                            </div>
+                            <div class="bulk-footer">
+                                <span class="bulk-count" id="bulkAreaCount"></span>
+                                <button type="button" class="btn-add-all" id="bulkAreaAddAll" disabled onclick="addAllBulk('area')">
+                                    <i class="fas fa-plus me-1"></i> Add All
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- By Office tab -->
+                        <div id="tab-office" class="bulk-panel">
+                            <select class="bulk-select" id="bulkAreaFilterForOffice" onchange="filterOfficesByArea()">
+                                <option value="">— Filter by Area (optional) —</option>
+                            </select>
+                            <select class="bulk-select" id="bulkOfficeSelect" onchange="refreshBulkPreview('office')">
+                                <option value="">— Select an Office —</option>
+                            </select>
+                            <div class="bulk-preview" id="bulkOfficePreview">
+                                <span class="text-muted" style="font-size:0.82rem;">Select an office to preview users.</span>
+                            </div>
+                            <div class="bulk-footer">
+                                <span class="bulk-count" id="bulkOfficeCount"></span>
+                                <button type="button" class="btn-add-all" id="bulkOfficeAddAll" disabled onclick="addAllBulk('office')">
+                                    <i class="fas fa-plus me-1"></i> Add All
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- By Department tab -->
+                        <div id="tab-department" class="bulk-panel">
+                            <select class="bulk-select" id="bulkOfficeFilterForDept" onchange="filterDeptsByOffice()">
+                                <option value="">— Filter by Office (optional) —</option>
+                            </select>
+                            <select class="bulk-select" id="bulkDeptSelect" onchange="refreshBulkPreview('department')">
+                                <option value="">— Select a Department —</option>
+                            </select>
+                            <div class="bulk-preview" id="bulkDeptPreview">
+                                <span class="text-muted" style="font-size:0.82rem;">Select a department to preview users.</span>
+                            </div>
+                            <div class="bulk-footer">
+                                <span class="bulk-count" id="bulkDeptCount"></span>
+                                <button type="button" class="btn-add-all" id="bulkDeptAddAll" disabled onclick="addAllBulk('department')">
+                                    <i class="fas fa-plus me-1"></i> Add All
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Group
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isEditMode = false;
+        let currentGroupId = null;
+        let orgData = null; // { areas, offices, departments, users }
+
+        // ── Org data ─────────────────────────────────────────────────────────
+        async function loadOrgData() {
+            if (orgData) return orgData;
+            const res = await fetch('/admin/custom-viewer-groups/org-structure');
+            if (!res.ok) throw new Error('Failed to load org structure');
+            orgData = await res.json();
+            populateBulkDropdowns();
+            return orgData;
+        }
+
+        function populateBulkDropdowns() {
+            const data = orgData;
+
+            // Area selects
+            ['bulkAreaSelect', 'bulkAreaFilterForOffice'].forEach(id => {
+                const sel = document.getElementById(id);
+                const placeholder = sel.options[0].text;
+                sel.innerHTML = `<option value="">${placeholder}</option>`;
+                data.areas.forEach(a => {
+                    sel.insertAdjacentHTML('beforeend', `<option value="${a.id}">${esc(a.name)}</option>`);
+                });
+            });
+
+            // Office filter for dept tab
+            const officeFilterForDept = document.getElementById('bulkOfficeFilterForDept');
+            officeFilterForDept.innerHTML = '<option value="">— Filter by Office (optional) —</option>';
+            data.offices.forEach(o => {
+                officeFilterForDept.insertAdjacentHTML('beforeend', `<option value="${o.id}">${esc(o.name)}</option>`);
+            });
+
+            // All offices initially in office tab
+            refreshOfficeOptions(null);
+
+            // All departments initially in dept tab
+            refreshDeptOptions(null);
+        }
+
+        function refreshOfficeOptions(areaId) {
+            const sel = document.getElementById('bulkOfficeSelect');
+            sel.innerHTML = '<option value="">— Select an Office —</option>';
+            (orgData ? orgData.offices : [])
+                .filter(o => !areaId || o.areaId === parseInt(areaId))
+                .forEach(o => {
+                    sel.insertAdjacentHTML('beforeend', `<option value="${o.id}">${esc(o.name)}</option>`);
+                });
+            refreshBulkPreview('office');
+        }
+
+        function refreshDeptOptions(officeId) {
+            const sel = document.getElementById('bulkDeptSelect');
+            sel.innerHTML = '<option value="">— Select a Department —</option>';
+            (orgData ? orgData.departments : [])
+                .filter(d => !officeId || d.officeId === parseInt(officeId))
+                .forEach(d => {
+                    sel.insertAdjacentHTML('beforeend', `<option value="${d.id}">${esc(d.name)}</option>`);
+                });
+            refreshBulkPreview('department');
+        }
+
+        function filterOfficesByArea() {
+            const areaId = document.getElementById('bulkAreaFilterForOffice').value;
+            refreshOfficeOptions(areaId || null);
+        }
+
+        function filterDeptsByOffice() {
+            const officeId = document.getElementById('bulkOfficeFilterForDept').value;
+            refreshDeptOptions(officeId || null);
+        }
+
+        // ── Tab switching ─────────────────────────────────────────────────────
+        function switchMemberTab(tab) {
+            document.querySelectorAll('.member-tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+            document.getElementById('tab-individual').style.display = tab === 'individual' ? '' : 'none';
+            ['area', 'office', 'department'].forEach(t => {
+                const el = document.getElementById('tab-' + t);
+                el.style.display = t === tab ? 'block' : 'none';
+            });
+            if (tab !== 'individual') loadOrgData().catch(console.error);
+        }
+
+        // ── Bulk preview ──────────────────────────────────────────────────────
+        function getCheckedIds() {
+            return Array.from(document.querySelectorAll('input[name="members"]:checked'))
+                .map(cb => parseInt(cb.value));
+        }
+
+        function refreshBulkPreview(type) {
+            const already = getCheckedIds();
+            let users = [];
+
+            if (type === 'area') {
+                const areaId = parseInt(document.getElementById('bulkAreaSelect').value);
+                if (!areaId) {
+                    setPreview('area', [], already);
+                    return;
+                }
+                users = orgData.users.filter(u => u.areaId === areaId);
+            } else if (type === 'office') {
+                const officeId = parseInt(document.getElementById('bulkOfficeSelect').value);
+                if (!officeId) {
+                    setPreview('office', [], already);
+                    return;
+                }
+                users = orgData.users.filter(u => u.officeId === officeId);
+            } else if (type === 'department') {
+                const deptId = parseInt(document.getElementById('bulkDeptSelect').value);
+                if (!deptId) {
+                    setPreview('department', [], already);
+                    return;
+                }
+                users = orgData.users.filter(u => u.departmentId === deptId);
+            }
+
+            setPreview(type, users, already);
+        }
+
+        function setPreview(type, users, already) {
+            const previewEl = document.getElementById('bulkAreaPreview')
+                                      .closest('.bulk-panel') // fallback
+                ? document.getElementById(`bulk${cap(type)}Preview`)
+                : null;
+            const countEl  = document.getElementById(`bulk${cap(type)}Count`);
+            const addAllEl = document.getElementById(`bulk${cap(type)}AddAll`);
+
+            const preview = document.getElementById(`bulk${cap(type)}Preview`);
+
+            const newOnes = users.filter(u => !already.includes(u.userId));
+
+            if (users.length === 0) {
+                preview.innerHTML = '<span class="text-muted" style="font-size:0.82rem;">No users found.</span>';
+                countEl.textContent = '';
+                addAllEl.disabled = true;
+                addAllEl.textContent = 'Add All';
+                return;
+            }
+
+            countEl.textContent = `${users.length} user${users.length !== 1 ? 's' : ''}` +
+                (newOnes.length < users.length ? ` (${users.length - newOnes.length} already added)` : '');
+
+            addAllEl.disabled = newOnes.length === 0;
+            addAllEl.textContent = newOnes.length > 0 ? `Add All (${newOnes.length})` : 'Add All';
+
+            preview.innerHTML = '';
+            users.forEach(u => {
+                const isAdded = already.includes(u.userId);
+                const row = document.createElement('div');
+                row.className = 'bulk-preview-row';
+                row.innerHTML = `
+                    <span>
+                        <i class="fas fa-user text-muted me-1" style="font-size:0.75rem;"></i>
+                        <strong style="font-size:0.82rem;">${esc(u.username)}</strong>
+                        <span class="text-muted" style="font-size:0.75rem;"> — ${esc(u.officeName || '')}</span>
+                    </span>
+                    ${isAdded
+                        ? '<span class="badge-added">Added</span>'
+                        : `<button type="button" class="btn-add-one" onclick="addSingleUser(${u.userId}, '${esc(type)}')">+</button>`
+                    }
+                `;
+                preview.appendChild(row);
+            });
+        }
+
+        function cap(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        // ── Add helpers ───────────────────────────────────────────────────────
+        function addSingleUser(userId, type) {
+            const cb = document.getElementById('user-' + userId);
+            if (cb && !cb.checked) {
+                cb.checked = true;
+                updateSelectedCount();
+            }
+            refreshBulkPreview(type);
+        }
+
+        function addAllBulk(type) {
+            const already = getCheckedIds();
+            let users = [];
+
+            if (type === 'area') {
+                const areaId = parseInt(document.getElementById('bulkAreaSelect').value);
+                users = orgData.users.filter(u => u.areaId === areaId && !already.includes(u.userId));
+            } else if (type === 'office') {
+                const officeId = parseInt(document.getElementById('bulkOfficeSelect').value);
+                users = orgData.users.filter(u => u.officeId === officeId && !already.includes(u.userId));
+            } else if (type === 'department') {
+                const deptId = parseInt(document.getElementById('bulkDeptSelect').value);
+                users = orgData.users.filter(u => u.departmentId === deptId && !already.includes(u.userId));
+            }
+
+            users.forEach(u => {
+                const cb = document.getElementById('user-' + u.userId);
+                if (cb) cb.checked = true;
+            });
+
+            updateSelectedCount();
+            refreshBulkPreview(type);
+        }
+
+        function updateSelectedCount() {
+            const count = getCheckedIds().length;
+            const badge = document.getElementById('selectedCount');
+            badge.style.display = count > 0 ? 'inline' : 'none';
+            badge.textContent = `${count} selected`;
+        }
+
+        // ── Modal open/close ──────────────────────────────────────────────────
+        function openCreateModal() {
+            isEditMode = false;
+            document.getElementById('modalTitle').textContent = 'Create Custom Viewer Group';
+            document.getElementById('groupForm').reset();
+            document.getElementById('groupId').value = '';
+            document.querySelectorAll('input[name="members"]').forEach(cb => cb.checked = false);
+            switchMemberTab('individual');
+            updateSelectedCount();
+            document.getElementById('groupModal').style.display = 'block';
+            loadOrgData().catch(console.error);
+        }
+
+        function openEditModal(groupId) {
+            isEditMode = true;
+            currentGroupId = groupId;
+            document.getElementById('modalTitle').textContent = 'Edit Custom Viewer Group';
+            document.getElementById('groupId').value = groupId;
+
+            fetch(`/admin/custom-viewer-groups/${groupId}/details`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('groupName').value = data.groupName;
+                    document.getElementById('description').value = data.description || '';
+
+                    document.querySelectorAll('input[name="members"]').forEach(cb => cb.checked = false);
+                    data.memberIds.forEach(userId => {
+                        const checkbox = document.getElementById('user-' + userId);
+                        if (checkbox) checkbox.checked = true;
+                    });
+
+                    switchMemberTab('individual');
+                    updateSelectedCount();
+                    document.getElementById('groupModal').style.display = 'block';
+                    loadOrgData().catch(console.error);
+                })
+                .catch(error => {
+                    console.error('Error loading group:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to load group details',
+                        confirmButtonColor: '#E8392F'
+                    });
+                });
+        }
+
+        function closeModal() {
+            document.getElementById('groupModal').style.display = 'none';
+        }
+
+        // ── Delete ────────────────────────────────────────────────────────────
+        function deleteGroup(groupId, groupName) {
+            Swal.fire({
+                title: 'Delete Group?',
+                html: `Are you sure you want to delete the group <strong>"${groupName}"</strong>?<br><br>Documents using this group may become inaccessible.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/admin/custom-viewer-groups/${groupId}`, { method: 'DELETE' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: data.message,
+                                confirmButtonColor: '#E8392F',
+                                timer: 1500
+                            }).then(() => location.reload());
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message || 'Failed to delete group',
+                            confirmButtonColor: '#E8392F'
+                        });
+                    });
+                }
+            });
+        }
+
+        // ── Form submit ───────────────────────────────────────────────────────
+        document.getElementById('groupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const groupName  = document.getElementById('groupName').value;
+            const description= document.getElementById('description').value;
+            const memberIds  = Array.from(document.querySelectorAll('input[name="members"]:checked'))
+                                    .map(cb => cb.value);
+
+            const formData = new FormData();
+            formData.append('groupName', groupName);
+            if (description) formData.append('description', description);
+            memberIds.forEach(id => formData.append('memberIds', id));
+
+            const url = isEditMode
+                ? `/admin/custom-viewer-groups/${currentGroupId}/update`
+                : '/admin/custom-viewer-groups/create';
+
+            fetch(url, { method: 'POST', body: formData })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message,
+                        confirmButtonColor: '#E8392F',
+                        timer: 1500
+                    }).then(() => location.reload());
+                } else {
+                    throw new Error(data.message);
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Failed to save group',
+                    confirmButtonColor: '#E8392F'
+                });
+            });
+        });
+
+        // ── Individual search ─────────────────────────────────────────────────
+        document.getElementById('memberSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.member-item').forEach(item => {
+                const label = item.querySelector('label').textContent.toLowerCase();
+                item.style.display = label.includes(searchTerm) ? 'flex' : 'none';
+            });
+        });
+
+        // ── Close on outside click ────────────────────────────────────────────
+        window.onclick = function(event) {
+            const modal = document.getElementById('groupModal');
+            if (event.target === modal) closeModal();
+        };
+
+        // ── HTML escape helper ────────────────────────────────────────────────
+        function esc(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // Pre-load org data so tabs are instant on first open
+        loadOrgData().catch(console.error);
+    </script>
+
+</div>
+</html>

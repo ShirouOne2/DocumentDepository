@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main-layout :: document('Shared Files', ~{::content})}">
+
+<div th:fragment="content">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" th:href="@{/css/modal.css}">
+
+    <div class="form-container">
+
+        <div class="page-header">
+            <h4>
+                <i class="fas fa-share-alt me-2"></i>All Records
+                <span th:if="${isAdmin}"
+                      class="badge bg-danger ms-2" style="font-size:0.7rem;">
+                    Admin View – All Documents
+                </span>
+            </h4>
+        </div>
+
+        <div class="page-body">
+
+            <!-- ── SEARCH & FILTERS ──────────────────────────────────── -->
+            <div class="form-section search-section">
+                <form th:action="@{/shared/search}" method="get">
+
+                    <div class="search-box-wrapper">
+                        <div class="search-label">
+                            <i class="fas fa-search"></i>
+                            <span>Search Documents</span>
+                        </div>
+                        <div class="search-input-group">
+                            <div class="search-input-wrapper">
+                                <div class="search-icon-prefix">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </div>
+                                <input type="text"
+                                       name="query"
+                                       th:value="${query}"
+                                       placeholder="Search by title, description, or tags…"
+                                       autocomplete="off">
+                                <button type="submit" class="search-btn">
+                                    <i class="fas fa-search"></i>
+                                    <span>Search</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Active search term badges -->
+                        <div th:if="${query != null and !#strings.isEmpty(query)}"
+                             style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem;align-items:center;">
+                            <span style="font-size:0.75rem;color:#6c757d;font-weight:600;">
+                                <i class="fas fa-filter me-1"></i>Searching for:
+                            </span>
+                            <th:block th:each="term, iterStat : ${#strings.arraySplit(query, ',')}">
+                                <span th:if="${!#strings.isEmpty(#strings.trim(term))}"
+                                      class="badge"
+                                      style="background:#fff3cd;color:#856404;border:1px solid #ffc107;
+                                             font-size:0.72rem;font-weight:600;padding:0.25rem 0.6rem;border-radius:20px;">
+                                    <i class="fas fa-tag me-1" style="font-size:0.6rem;"></i>
+                                    <span th:text="${#strings.trim(term)}"></span>
+                                </span>
+                            </th:block>
+                        </div>
+
+                        <div class="search-hint">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Search across titles, descriptions, and tags. Separate multiple keywords with <strong>commas</strong> (e.g. <em>memo, budget, 2024</em>) — up to 3 terms.</span>
+                        </div>
+                    </div>
+
+                    <div class="filters-wrapper">
+                        <div class="filter-divider">
+                            <div class="filter-divider-line"></div>
+                            <div class="filter-divider-text">
+                                <i class="fas fa-sliders"></i>
+                                <span>Advanced Filters</span>
+                            </div>
+                            <div class="filter-divider-line"></div>
+                        </div>
+
+                        <div class="row g-3">
+
+                            <!-- Row 1: common filters (visible to all) -->
+                            <div class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-folder me-1"></i>Classification
+                                    </label>
+                                    <select class="filter-control" name="classificationId">
+                                        <option value="">All Classifications</option>
+                                        <option th:each="c : ${classifications}"
+                                                th:value="${c.id}"
+                                                th:text="${c.name}"
+                                                th:selected="${selectedClassification == c.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-user me-1"></i>Uploaded By
+                                    </label>
+                                    <select class="filter-control" name="uploadedById">
+                                        <option value="">All Users</option>
+                                        <option th:each="u : ${uploaders}"
+                                                th:value="${u.userId}"
+                                                th:text="${u.username}"
+                                                th:selected="${selectedUploader == u.userId}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-calendar-alt me-1"></i>Doc. Date From
+                                    </label>
+                                    <input type="date"
+                                           class="filter-control"
+                                           name="startDate"
+                                           th:value="${startDate}">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-calendar-check me-1"></i>Doc. Date To
+                                    </label>
+                                    <input type="date"
+                                           class="filter-control"
+                                           name="endDate"
+                                           th:value="${endDate}">
+                                </div>
+                            </div>
+
+                            <!-- Custom Group filter: shown to ALL users who have groups available -->
+                            <div th:if="${customViewerGroups != null and !#lists.isEmpty(customViewerGroups)}"
+                                 class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-users-cog me-1"></i>
+                                        <span th:if="${isAdmin}">Custom Group (Admin)</span>
+                                        <span th:if="${!isAdmin}">My Groups</span>
+                                    </label>
+                                    <select class="filter-control" name="customGroupId">
+                                        <option value="">All Groups</option>
+                                        <option th:each="g : ${customViewerGroups}"
+                                                th:value="${g.groupId}"
+                                                th:text="${g.groupName + ' (' + g.memberCount + ' members)'}"
+                                                th:selected="${customGroupId == g.groupId}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Row 2: admin-only filters -->
+                            <div th:if="${isAdmin}" class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-crown me-1"></i>Area (Admin)
+                                    </label>
+                                    <select class="filter-control" name="filterAreaId">
+                                        <option value="">All Areas</option>
+                                        <option th:each="area : ${areas}"
+                                                th:value="${area.id}"
+                                                th:text="${area.name}"
+                                                th:selected="${filterAreaId == area.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div th:if="${isAdmin}" class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-crown me-1"></i>Office (Admin)
+                                    </label>
+                                    <select class="filter-control" name="filterOfficeId">
+                                        <option value="">All Offices</option>
+                                        <option th:each="office : ${offices}"
+                                                th:value="${office.officeId}"
+                                                th:text="${office.officeName}"
+                                                th:selected="${filterOfficeId == office.officeId}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div th:if="${isAdmin}" class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-crown me-1"></i>Department (Admin)
+                                    </label>
+                                    <select class="filter-control" name="filterDepartmentId">
+                                        <option value="">All Departments</option>
+                                        <option th:each="dept : ${departments}"
+                                                th:value="${dept.id}"
+                                                th:text="${dept.name}"
+                                                th:selected="${filterDepartmentId == dept.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="filter-actions">
+                            <a th:href="@{/shared}" class="btn-reset">
+                                <i class="fas fa-rotate-right"></i>
+                                <span>Clear All Filters</span>
+                            </a>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- ── DOCUMENTS TABLE ───────────────────────────────────── -->
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="fas fa-file-alt me-2"></i>
+                    <span th:if="${query == null or #strings.isEmpty(query)}">Documents Shared With You</span>
+                    <span th:if="${query != null and !#strings.isEmpty(query)}">
+                        Search Results
+                        <span class="badge bg-secondary ms-2" style="font-size:0.7rem;"
+                              th:text="${totalItems} + ' record(s) found'"></span>
+                    </span>
+                </div>
+
+                <button onclick="confirmExport()" class="btn btn-success btn-sm mb-3">
+                    <i class="fas fa-file-excel"></i> Export Search Results
+                </button>
+
+                <div th:if="${not #lists.isEmpty(documents)}" class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Doc. ID</th>
+                                <th>Classification</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Document Date</th>
+                                <th>Tags</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="doc, i : ${documents}">
+                                <td th:text="${doc.documentId}"></td>
+                                <td th:text="${doc.documentClassification.name}"></td>
+                                <td th:text="${doc.title}"></td>
+                                <td class="text" style="max-width: 500px"
+                                    th:text="${doc.description}"></td>
+                                <td class="text-muted small"
+                                    th:text="${doc.documentDate != null
+                                        ? #temporals.format(doc.documentDate, 'yyyy-MM-dd')
+                                        : '-'}">
+                                </td>
+                                <td>
+                                    <div th:if="${doc.tags != null and !doc.tags.isEmpty()}"
+                                         style="display:flex;flex-wrap:wrap;gap:0.25rem;">
+                                        <span th:each="tag : ${doc.tags}"
+                                              class="badge"
+                                              style="background-color:#fcebea;color:#E8392F;
+                                                     font-size:0.65rem;font-weight:600;
+                                                     padding:0.2rem 0.5rem;">
+                                            <i class="fas fa-tag" style="font-size:0.6rem;"></i>
+                                            <span th:text="${tag.tagName}">tag</span>
+                                        </span>
+                                    </div>
+                                    <span th:if="${doc.tags == null or doc.tags.isEmpty()}"
+                                          class="text-muted" style="font-size:0.7rem;">
+                                        No tags
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary btn-view"
+                                            th:data-id="${doc.documentId}"
+                                            title="View details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination — preserves all active search/filter params across pages -->
+                <div th:if="${totalPages > 1}" class="d-flex justify-content-center align-items-center mt-3 gap-2 flex-wrap">
+
+                    <!-- Mobile: just Prev / Page X of Y / Next -->
+                    <div class="d-flex d-md-none align-items-center gap-2">
+                        <a th:href="@{/shared/search(page=${currentPage - 1},query=${query},classificationId=${selectedClassification},uploadedById=${selectedUploader},startDate=${startDate},endDate=${endDate},filterAreaId=${filterAreaId},filterOfficeId=${filterOfficeId},filterDepartmentId=${filterDepartmentId},customGroupId=${customGroupId})}"
+                           class="btn btn-sm btn-outline-secondary"
+                           th:classappend="${currentPage == 0} ? ' disabled pe-none'"
+                           style="min-width:72px;font-size:0.8rem;">
+                            &laquo; Prev
+                        </a>
+                        <span class="text-muted" style="font-size:0.8rem;white-space:nowrap;">
+                            Page <strong th:text="${currentPage + 1}"></strong> / <span th:text="${totalPages}"></span>
+                        </span>
+                        <a th:href="@{/shared/search(page=${currentPage + 1},query=${query},classificationId=${selectedClassification},uploadedById=${selectedUploader},startDate=${startDate},endDate=${endDate},filterAreaId=${filterAreaId},filterOfficeId=${filterOfficeId},filterDepartmentId=${filterDepartmentId},customGroupId=${customGroupId})}"
+                           class="btn btn-sm btn-outline-secondary"
+                           th:classappend="${currentPage + 1 >= totalPages} ? ' disabled pe-none'"
+                           style="min-width:72px;font-size:0.8rem;">
+                            Next &raquo;
+                        </a>
+                    </div>
+
+                    <!-- Desktop: windowed page numbers -->
+                    <div class="d-none d-md-flex align-items-center gap-1 flex-wrap">
+
+                        <a th:href="@{/shared/search(page=${currentPage - 1},query=${query},classificationId=${selectedClassification},uploadedById=${selectedUploader},startDate=${startDate},endDate=${endDate},filterAreaId=${filterAreaId},filterOfficeId=${filterOfficeId},filterDepartmentId=${filterDepartmentId},customGroupId=${customGroupId})}"
+                           class="btn btn-sm btn-outline-secondary"
+                           th:classappend="${currentPage == 0} ? ' disabled pe-none'"
+                           style="font-size:0.75rem;padding:0.3rem 0.65rem;">
+                            &laquo; Prev
+                        </a>
+
+                        <th:block th:if="${currentPage > 2}">
+                            <a th:href="@{/shared/search(page=0,query=${query},classificationId=${selectedClassification},uploadedById=${selectedUploader},startDate=${startDate},endDate=${endDate},filterAreaId=${filterAreaId},filterOfficeId=${filterOfficeId},filterDepartmentId=${filterDepartmentId},customGroupId=${customGroupId})}"
+                               class="btn btn-sm btn-outline-secondary" style="font-size:0.75rem;padding:0.3rem 0.65rem;">1</a>
+                            <span th:if="${currentPage > 3}" class="px-1 text-muted" style="font-size:0.75rem;">…</span>
+                        </th:block>
+
+                        <th:block th:each="i : ${#numbers.sequence(
+                                (currentPage - 2 < 0) ? 0 : currentPage - 2,
+                                (currentPage + 2 >= totalPages) ? totalPages - 1 : currentPage + 2)}">
+                            <a th:href="@{/shared/search(page=${i},query=${query},classificationId=${selectedClassification},uploadedById=${selectedUploader},startDate=${startDate},endDate=${endDate},filterAreaId=${filterAreaId},filterOfficeId=${filterOfficeId},filterDepartmentId=${filterDepartmentId},customGroupId=${customGroupId})}"
+                               th:text="${i + 1}"
+                               class="btn btn-sm"
+                               th:classappend="${i == currentPage} ? 'btn-danger text-white' : 'btn-outline-secondary'"
+                               style="font-size:0.75rem;padding:0.3rem 0.65rem;min-width:2rem;">
+                            </a>
+                        </th:block>
+
+                        <th:block th:if="${currentPage < totalPages - 3}">
+                            <span th:if="${currentPage < totalPages - 4}" class="px-1 text-muted" style="font-size:0.75rem;">…</span>
+                            <a th:href="@{/shared/search(page=${totalPages - 1},query=${query},classificationId=${selectedClassification},uploadedById=${selectedUploader},startDate=${startDate},endDate=${endDate},filterAreaId=${filterAreaId},filterOfficeId=${filterOfficeId},filterDepartmentId=${filterDepartmentId},customGroupId=${customGroupId})}"
+                               th:text="${totalPages}"
+                               class="btn btn-sm btn-outline-secondary" style="font-size:0.75rem;padding:0.3rem 0.65rem;min-width:2rem;"></a>
+                        </th:block>
+
+                        <a th:href="@{/shared/search(page=${currentPage + 1},query=${query},classificationId=${selectedClassification},uploadedById=${selectedUploader},startDate=${startDate},endDate=${endDate},filterAreaId=${filterAreaId},filterOfficeId=${filterOfficeId},filterDepartmentId=${filterDepartmentId},customGroupId=${customGroupId})}"
+                           class="btn btn-sm btn-outline-secondary"
+                           th:classappend="${currentPage + 1 >= totalPages} ? ' disabled pe-none'"
+                           style="font-size:0.75rem;padding:0.3rem 0.65rem;">
+                            Next &raquo;
+                        </a>
+
+                        <span class="text-muted ms-2" style="font-size:0.72rem;white-space:nowrap;">
+                            Page <span th:text="${currentPage + 1}"></span> of <span th:text="${totalPages}"></span>
+                        </span>
+
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div th:if="${#lists.isEmpty(documents)}"
+                     class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span th:if="${query != null and !#strings.isEmpty(query)}">
+                        No documents found matching your search criteria.
+                    </span>
+                    <span th:if="${query == null or #strings.isEmpty(query)}">
+                        No documents have been shared with you yet.
+                    </span>
+                </div>
+
+                <!-- ── MODAL (single shared fragment) ────────────────── -->
+                <div th:replace="~{fragments/document-modal :: documentModal(
+                    isAdmin            = ${isAdmin},
+                    pageMode           = 'shared',
+                    classifications    = ${classifications},
+                    customViewerGroups = ${customViewerGroups},
+                    offices            = ${offices},
+                    departments        = ${departments}
+                )}"></div>
+
+            </div> <!-- /form-section -->
+        </div> <!-- /page-body -->
+    </div> <!-- /form-container -->
+
+    <!-- modalConfig must come BEFORE the JS file -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        window.modalConfig = {
+            pageMode      : 'shared',
+            isAdmin       : /*[[${isAdmin}]]*/ false,
+            currentUserId : /*[[${currentUserId}]]*/ null,
+            export: {
+                totalItems         : /*[[${totalItems}]]*/ 0,
+                query              : /*[[${query}]]*/ '',
+                classificationId   : /*[[${selectedClassification}]]*/ null,
+                uploadedById       : /*[[${selectedUploader}]]*/ null,
+                startDate          : /*[[${startDate}]]*/ '',
+                endDate            : /*[[${endDate}]]*/ '',
+                filterAreaId       : /*[[${filterAreaId}]]*/ null,
+                filterOfficeId     : /*[[${filterOfficeId}]]*/ null,
+                filterDepartmentId : /*[[${filterDepartmentId}]]*/ null,
+                customGroupId      : /*[[${customGroupId}]]*/ null
+            }
+        };
+        /*]]>*/
+    </script>
+    <script th:src="@{/js/document-modal.js}"></script>
+
+</div>
+</html>
+
+<!-- Shared Files -->

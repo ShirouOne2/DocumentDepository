@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Login | PhilPost DDS</title>
+
+    <link rel="icon" type="image/x-icon" href="/assets/favicon1.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/favicon1.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-accent: #E8392F; 
+            --logo-secondary-color: #2C73D2;
+            --body-font: 'Montserrat', sans-serif;
+            --bg-gray: #F8F9FA;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            /* Use dvh so the page fills the visible area on mobile browsers
+               even when the address bar is visible/hidden */
+            min-height: 100dvh;
+            min-height: 100vh; /* fallback */
+        }
+
+        body {
+            min-height: 100dvh;
+            min-height: 100vh; /* fallback */
+            background-color: var(--bg-gray);
+            font-family: var(--body-font);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Honor notches / home-bar on iOS */
+            padding: env(safe-area-inset-top, 1rem)
+                     env(safe-area-inset-right, 1rem)
+                     env(safe-area-inset-bottom, 1rem)
+                     env(safe-area-inset-left, 1rem);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 360px;
+            background: #FFFFFF;
+            padding: 2.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            /* Small horizontal margin so it never touches viewport edges */
+            margin: 1rem;
+        }
+
+        .brand-header {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .brand-header img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 0.5rem;
+        }
+
+        .nav_logo-name {
+            display: block;
+            color: var(--logo-secondary-color);
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+
+        .logo-red-accent {
+            color: var(--primary-accent);
+        }
+
+        .logo-subtitle {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #333333;
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .error-alert {
+            background-color: #FCEBEA;
+            color: var(--primary-accent);
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: 1px solid rgba(232, 57, 47, 0.1);
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 1.2rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #666;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i.bx-user,
+        .input-wrapper i.bx-lock-alt {
+            position: absolute;
+            left: 12px;
+            color: #A0A0A0;
+            font-size: 1.2rem;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.7rem 0.75rem 0.7rem 2.6rem;
+            font-family: var(--body-font);
+            /* 16px minimum prevents iOS auto-zoom on focus */
+            font-size: 1rem;
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .form-control.has-toggle {
+            padding-right: 2.8rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 3px rgba(232, 57, 47, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--primary-accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--body-font);
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            margin-top: 0.5rem;
+            /* 44px minimum touch target (WCAG 2.5.5) */
+            min-height: 44px;
+            touch-action: manipulation;
+        }
+
+        .login-btn:hover {
+            background-color: #d12f26;
+        }
+
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
+        .forgot-password-link {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 1rem;
+            color: #666;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s;
+            /* Adequate tap target on touch screens */
+            min-height: 44px;
+            padding: 0 0.25rem;
+            touch-action: manipulation;
+        }
+
+        .forgot-password-link:hover {
+            color: var(--primary-accent);
+        }
+
+        .footer-text {
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            color: #999;
+            line-height: 1.5;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            left: auto;
+            color: #A0A0A0;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 3;
+            transition: color 0.2s;
+            pointer-events: auto;
+            /* Bigger tap target without changing visual size */
+            padding: 0.6rem;
+            margin-right: -0.6rem;
+            touch-action: manipulation;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-accent);
+        }
+
+        /* ═══════════════════════════════════════════════
+           RESPONSIVE BREAKPOINTS
+        ═══════════════════════════════════════════════ */
+
+        /* Tiny phones (< 375px) — Galaxy A series, older iPhones */
+        @media (max-width: 374px) {
+            .login-container {
+                padding: 2rem 1.25rem;
+                margin: 0.5rem;
+            }
+            .brand-header img {
+                width: 42px;
+                height: 42px;
+            }
+            .nav_logo-name {
+                font-size: 1.15rem;
+            }
+        }
+
+        /* Landscape orientation on phones — card can overflow, allow scroll */
+        @media (max-height: 580px) and (orientation: landscape) {
+            body {
+                align-items: flex-start;
+                padding-top: 1.5rem;
+                padding-bottom: 1.5rem;
+            }
+            .login-container {
+                margin: 0 auto;
+            }
+            .brand-header {
+                margin-bottom: 1rem;
+            }
+            .brand-header img {
+                width: 36px;
+                height: 36px;
+                margin-bottom: 0.25rem;
+            }
+            .form-group {
+                margin-bottom: 0.9rem;
+            }
+            .footer-text {
+                margin-top: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="brand-header">
+        <img th:src="@{/assets/pstmnIcon.png}" alt="PhilPost Logo"/>
+        
+        <span class="nav_logo-name"><i>
+            PHL<span class="logo-red-accent">POST</span></i>
+        </span>
+        <div class="logo-subtitle">Document Depository</div>
+    </div>
+
+    <div th:if="${error}" class="error-alert">
+        <i class='bx bxs-error-circle'></i>
+        <span th:text="${error}"></span>
+    </div>
+
+    <form id="login-form" th:action="@{/login}" method="post" autocomplete="on">
+        <div class="form-group">
+            <label class="form-label">Username</label>
+            <div class="input-wrapper">
+                <i class='bx bx-user'></i>
+                <input type="text" 
+                       name="username" 
+                       class="form-control" 
+                       placeholder="Your username" 
+                       required 
+                       autofocus
+                       autocomplete="username">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-wrapper">
+                <i class='bx bx-lock-alt'></i>
+        
+                <input type="password"
+                       name="password"
+                       id="passwordField"
+                       class="form-control has-toggle"
+                       placeholder="Your password"
+                       required
+                       autocomplete="current-password">
+        
+                <i class="bx bx-show password-toggle"
+                   id="togglePassword"
+                   role="button"
+                   aria-label="Toggle password visibility"></i>
+            </div>
+        </div>
+
+        <button type="submit" class="login-btn">Sign In</button>
+    </form>
+
+    <a th:href="@{/password-reset/forgot}" class="forgot-password-link">
+        Forgot Password?
+    </a>
+
+    <div class="footer-text">
+        &copy; 2026 Philippine Postal Corporation<br>
+        Management Information Systems Dept.
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordField = document.getElementById('passwordField');
+
+        if (togglePassword && passwordField) {
+            togglePassword.addEventListener('click', function() {
+                const type = passwordField.getAttribute('type');
+                
+                if (type === 'password') {
+                    passwordField.setAttribute('type', 'text');
+                    togglePassword.classList.remove('bx-show');
+                    togglePassword.classList.add('bx-hide');
+                } else {
+                    passwordField.setAttribute('type', 'password');
+                    togglePassword.classList.remove('bx-hide');
+                    togglePassword.classList.add('bx-show');
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

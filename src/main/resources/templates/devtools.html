@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main-layout :: document('DevTools', ~{::content})}">
+
+<div th:fragment="content">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- DevTools CSS -->
+    <link rel="stylesheet" th:href="@{/css/devtools.css}">
+
+    <!-- Hidden alert messages for JavaScript -->
+    <div th:if="${success}" style="display:none;">
+        <span id="successMessage" th:text="${success}"></span>
+    </div>
+    <div th:if="${error}" style="display:none;">
+        <span id="errorMessage" th:text="${error}"></span>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TAB NAVIGATION                              -->
+    <!-- ============================================ -->
+    <div class="devtools-tabs">
+        <button class="devtools-tab" data-tab="users">
+            <i class="fas fa-users-cog"></i> Users
+        </button>
+        <button class="devtools-tab" data-tab="positions">
+            <i class="fas fa-briefcase"></i> Positions
+        </button>
+        <button class="devtools-tab" data-tab="departments">
+            <i class="fas fa-building"></i> Departments
+        </button>
+        <button class="devtools-tab" data-tab="areas">
+            <i class="fas fa-map-marked-alt"></i> Areas
+        </button>
+        <button class="devtools-tab" data-tab="offices">
+            <i class="fas fa-door-open"></i> Offices
+        </button>
+        <button class="devtools-tab" data-tab="classifications">
+            <i class="fas fa-file-alt"></i> Document Types
+        </button>
+    </div>
+
+    <div class="devtools-tab-body">
+
+        <!-- ========== USERS ========== -->
+        <div class="devtools-panel" id="panel-users">
+            <div class="user-management-container" style="margin-bottom:0; border-radius:0; box-shadow:none; border:none;">
+                <div class="user-management-header">
+                    <h4><i class="fas fa-users-cog me-2"></i>User Management</h4>
+                </div>
+                <div class="user-management-body">
+                    <div class="form-section">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="section-title mb-0">
+                                <i class="fas fa-list me-2"></i>All Users
+                            </div>
+                            <div class="d-flex gap-2 align-items-center">
+                                <button class="btn btn-primary btn-sm" onclick="openAddUserModal()">
+                                    <i class="fas fa-user-plus me-2"></i>Add User
+                                </button>
+                                <div class="search-bar">
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Search users...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" id="userTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>User</th>
+                                        <th>Position</th>
+                                        <th>Department</th>
+                                        <th>Office</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="user, i : ${users}">
+                                        <td th:text="${i.index + 1}"></td>
+                                        <td>
+                                            <div class="user-info">
+                                                <div class="user-avatar"
+                                                     th:text="${#strings.substring(user.username,0,1).toUpperCase()}"></div>
+                                                <div class="user-details">
+                                                    <span class="user-username" th:text="${user.username}"></span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td th:text="${user.jobPosition != null ? user.jobPosition.name : 'N/A'}"></td>
+                                        <td th:text="${user.department != null ? user.department.name : 'N/A'}"></td>
+                                        <td th:text="${user.office != null ? user.office.officeName : 'N/A'}"></td>
+                                        <td th:text="${user.email}"></td>
+                                        <td>
+                                            <span class="badge"
+                                                  th:classappend="${user.role.name == 'ADMIN'} ? 'badge-admin' : 'badge-user'"
+                                                  th:text="${user.role.name}">
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge"
+                                                  th:classappend="${user.isActive} ? 'bg-success' : 'bg-danger'"
+                                                  th:text="${user.isActive ? 'Active' : 'Inactive'}">
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-primary btn-edit me-1"
+                                                    th:data-user-id="${user.userId}"
+                                                    th:data-username="${user.username}"
+                                                    th:data-position-id="${user.jobPosition != null ? user.jobPosition.id : ''}"
+                                                    th:data-department-id="${user.department != null ? user.department.id : ''}"
+                                                    th:data-office-id="${user.office != null ? user.office.officeId : ''}"
+                                                    th:data-role-id="${user.role.id}"
+                                                    th:data-email="${user.email}"
+                                                    th:data-is-active="${user.isActive}"
+                                                    th:data-is-admin="${user.role.name == 'ADMIN'}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning btn-reset-password"
+                                                    th:data-user-id="${user.userId}"
+                                                    th:data-username="${user.username}"
+                                                    th:data-is-admin="${user.role.name == 'ADMIN'}">
+                                                <i class="fas fa-key"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-warning mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <strong>Admin Restriction:</strong> You can only edit regular users. Admin accounts are protected and cannot be modified.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== POSITIONS ========== -->
+        <div class="devtools-panel" id="panel-positions">
+            <div class="user-management-container" style="margin-bottom:0; border-radius:0; box-shadow:none; border:none;">
+                <div class="user-management-header">
+                    <h4><i class="fas fa-briefcase me-2"></i>Position Management</h4>
+                </div>
+                <div class="user-management-body">
+                    <div class="form-section">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="section-title mb-0">
+                                <i class="fas fa-list me-2"></i>All Positions
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="openAddPositionModal()">
+                                <i class="fas fa-plus me-2"></i>Add Position
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Position Name</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="position, i : ${jobPositions}">
+                                        <td th:text="${i.index + 1}"></td>
+                                        <td th:text="${position.name}"></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-primary btn-edit-position me-1"
+                                                    th:data-position-id="${position.id}"
+                                                    th:data-position-name="${position.name}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger btn-delete-position"
+                                                    th:data-position-id="${position.id}"
+                                                    th:data-position-name="${position.name}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== DEPARTMENTS ========== -->
+        <div class="devtools-panel" id="panel-departments">
+            <div class="user-management-container" style="margin-bottom:0; border-radius:0; box-shadow:none; border:none;">
+                <div class="user-management-header">
+                    <h4><i class="fas fa-building me-2"></i>Department Management</h4>
+                </div>
+                <div class="user-management-body">
+                    <div class="form-section">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="section-title mb-0">
+                                <i class="fas fa-list me-2"></i>All Departments
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="openAddDepartmentModal()">
+                                <i class="fas fa-plus me-2"></i>Add Department
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Department Name</th>
+                                        <th>Office</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="department, i : ${departments}">
+                                        <td th:text="${i.index + 1}"></td>
+                                        <td th:text="${department.name}"></td>
+                                        <td th:text="${department.office != null ? department.office.officeName : 'N/A'}"></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-primary btn-edit-department me-1"
+                                                    th:data-department-id="${department.id}"
+                                                    th:data-department-name="${department.name}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger btn-delete-department"
+                                                    th:data-department-id="${department.id}"
+                                                    th:data-department-name="${department.name}"
+                                                    th:data-office-id="${department.office != null ? department.office.officeId : ''}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== AREAS ========== -->
+        <div class="devtools-panel" id="panel-areas">
+            <div class="user-management-container" style="margin-bottom:0; border-radius:0; box-shadow:none; border:none;">
+                <div class="user-management-header">
+                    <h4><i class="fas fa-map-marked-alt me-2"></i>Area Management</h4>
+                </div>
+                <div class="user-management-body">
+                    <div class="form-section">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="section-title mb-0">
+                                <i class="fas fa-list me-2"></i>All Areas
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="openAddAreaModal()">
+                                <i class="fas fa-plus me-2"></i>Add Area
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Area Name</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="area, i : ${areas}">
+                                        <td th:text="${i.index + 1}"></td>
+                                        <td th:text="${area.name}"></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-primary btn-edit-area me-1"
+                                                    th:data-area-id="${area.id}"
+                                                    th:data-area-name="${area.name}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger btn-delete-area"
+                                                    th:data-area-id="${area.id}"
+                                                    th:data-area-name="${area.name}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== OFFICES ========== -->
+        <div class="devtools-panel" id="panel-offices">
+            <div class="user-management-container" style="margin-bottom:0; border-radius:0; box-shadow:none; border:none;">
+                <div class="user-management-header">
+                    <h4><i class="fas fa-door-open me-2"></i>Office Management</h4>
+                </div>
+                <div class="user-management-body">
+                    <div class="form-section">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="section-title mb-0">
+                                <i class="fas fa-list me-2"></i>All Offices
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="openAddOfficeModal()">
+                                <i class="fas fa-plus me-2"></i>Add Office
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Office Name</th>
+                                        <th>Area</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="office, i : ${offices}">
+                                        <td th:text="${i.index + 1}"></td>
+                                        <td th:text="${office.officeName}"></td>
+                                        <td th:text="${office.area != null ? office.area.name : 'N/A'}"></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-primary btn-edit-office me-1"
+                                                    th:data-office-id="${office.officeId}"
+                                                    th:data-office-name="${office.officeName}"
+                                                    th:data-area-id="${office.area != null ? office.area.id : ''}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger btn-delete-office"
+                                                    th:data-office-id="${office.officeId}"
+                                                    th:data-office-name="${office.officeName}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== DOCUMENT TYPES / CLASSIFICATIONS ========== -->
+        <div class="devtools-panel" id="panel-classifications">
+            <div class="user-management-container" style="margin-bottom:0; border-radius:0; box-shadow:none; border:none;">
+                <div class="user-management-header">
+                    <h4><i class="fas fa-file-alt me-2"></i>Document Type Management</h4>
+                </div>
+                <div class="user-management-body">
+                    <div class="form-section">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="section-title mb-0">
+                                <i class="fas fa-list me-2"></i>All Document Types
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="openAddClassificationModal()">
+                                <i class="fas fa-plus me-2"></i>Add Document Type
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Classification Name</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="classification, i : ${documentClassifications}">
+                                        <td th:text="${i.index + 1}"></td>
+                                        <td th:text="${classification.name}"></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-primary btn-edit-classification me-1"
+                                                    th:data-classification-id="${classification.id}"
+                                                    th:data-classification-name="${classification.name}">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger btn-delete-classification"
+                                                    th:data-classification-id="${classification.id}"
+                                                    th:data-classification-name="${classification.name}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /devtools-tab-body -->
+
+    <!-- ============================================ -->
+    <!-- MODALS (unchanged)                          -->
+    <!-- ============================================ -->
+    <div th:replace="~{devtools/modal-users :: addUserModal}"></div>
+    <div th:replace="~{devtools/modal-users :: editUserModal}"></div>
+    <div th:replace="~{devtools/modal-users :: resetPasswordModal}"></div>
+    <div th:replace="~{devtools/modal-positions :: positionModal}"></div>
+    <div th:replace="~{devtools/modal-departments :: departmentModal}"></div>
+    <div th:replace="~{devtools/modal-areas :: areaModal}"></div>
+    <div th:replace="~{devtools/modal-offices :: officeModal}"></div>
+    <div th:replace="~{devtools/modal-viewergroups :: viewerGroupModal}"></div>
+    <div th:replace="~{devtools/modal-classifications :: classificationModal}"></div>
+
+    <!-- ============================================ -->
+    <!-- JAVASCRIPT IMPORTS (unchanged)              -->
+    <!-- ============================================ -->
+    <script th:src="@{/js/devtools-main.js}"></script>
+    <script th:src="@{/js/devtools-utils.js}"></script>
+    <script th:src="@{/js/devtools-positions.js}"></script>
+    <script th:src="@{/js/devtools-users.js}"></script>
+    <script th:src="@{/js/devtools-departments.js}"></script>
+    <script th:src="@{/js/devtools-areas.js}"></script>
+    <script th:src="@{/js/devtools-viewergroups.js}"></script>
+    <script th:src="@{/js/devtools-offices.js}"></script>
+    <script th:src="@{/js/devtools-classifications.js}"></script>
+
+</div>
+</html>

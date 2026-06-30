@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<header th:fragment="main-header" class="header" id="header">
+    <style th:fragment="header-styles">
+        .header {
+            overflow: visible !important;
+        }
+
+        .header_img {
+            width: auto !important;
+            height: auto !important;
+            border-radius: 0 !important;
+            overflow: visible !important;
+        }
+
+        /* Header Right Section */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: auto;
+            overflow: visible;
+        }
+
+        /* Notification Bell Styles */
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .notification-bell i {
+            font-size: 1.5rem;
+            color: #495057;
+            transition: color 0.2s;
+        }
+
+        .notification-bell:hover i {
+            color: #E8392F;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(232, 57, 47, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* User Account Styles */
+        .user-account {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .user-account-trigger {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .user-account-trigger:hover {
+            background-color: rgba(232, 57, 47, 0.05);
+        }
+
+        .user-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 8px rgba(232, 57, 47, 0.3);
+        }
+
+        /* Notification Dropdown */
+        .notification-dropdown {
+            position: absolute;
+            top: 120%;
+            left: 0;
+            width: 380px;
+            max-height: 500px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            transform: translateX(-50%);
+        }
+
+        .notification-dropdown.show {
+            display: flex;
+        }
+
+        /* User Dropdown */
+        .user-dropdown {
+            position: absolute;
+            top: 120%;
+            left: 0;
+            min-width: 250px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            transform: translateX(-50%);
+        }
+
+        .user-dropdown.show {
+            display: flex;
+        }
+
+        .notification-dropdown-header,
+        .user-dropdown-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-dropdown-header h6,
+        .user-dropdown-header h6 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .user-dropdown-header {
+            justify-content: flex-start;
+            gap: 0.5rem;
+        }
+
+        .user-dropdown-header i {
+            color: #E8392F;
+        }
+
+        .mark-all-read-btn {
+            background: none;
+            border: none;
+            color: #E8392F;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .mark-all-read-btn:hover {
+            background: #fcebea;
+        }
+
+        .notification-dropdown-body {
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .user-dropdown-body {
+            padding: 0.5rem 0;
+        }
+
+        .notification-item {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #f8f9fa;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .notification-item:hover {
+            background: #f8f9fa;
+        }
+
+        .notification-item.unread {
+            background: #fcfbf9;
+            border-left: 3px solid #E8392F;
+        }
+
+        .notification-item-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .notification-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notification-icon.document {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .notification-icon.comment {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0.25rem;
+        }
+
+        .notification-message {
+            font-size: 0.8rem;
+            color: #6c757d;
+            line-height: 1.4;
+        }
+
+        .notification-time {
+            font-size: 0.7rem;
+            color: #adb5bd;
+            margin-top: 0.25rem;
+        }
+
+        .notification-empty {
+            padding: 3rem 2rem;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        .notification-empty i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .notification-footer {
+            padding: 0.75rem 1.25rem;
+            border-top: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .notification-footer a {
+            color: #E8392F;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .notification-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* User Dropdown Items */
+        .user-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: #212529;
+            text-decoration: none;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+
+        .user-dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .user-dropdown-item i {
+            color: #6c757d;
+            width: 20px;
+        }
+
+        .user-dropdown-item.logout {
+            color: #dc3545;
+        }
+
+        .user-dropdown-divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 0.5rem 0;
+        }
+
+        /* 🌙 THEME TOGGLE SLIDER STYLES */
+        .theme-toggle-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .theme-toggle-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .theme-toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #212529;
+            font-size: 0.875rem;
+        }
+
+        .theme-toggle-label i {
+            color: #6c757d;
+            width: 20px;
+        }
+
+        /* Toggle Switch */
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .theme-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .theme-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .theme-slider {
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+        }
+
+        input:checked + .theme-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Add moon/sun icons to slider */
+        .theme-slider:after {
+            content: '☀️';
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        input:checked + .theme-slider:after {
+            content: '🌙';
+            left: 6px;
+            right: auto;
+        }
+
+        /* Scrollbar */
+        .notification-dropdown-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .notification-dropdown-body::-webkit-scrollbar-track {
+            background: #f8f9fa;
+        }
+
+        .notification-dropdown-body::-webkit-scrollbar-thumb {
+            background: #ced4da;
+            border-radius: 3px;
+        }
+    </style>
+
+    <div class="header_toggle"> 
+        <i class='bx bx-menu' id="header-toggle"></i> 
+    </div>
+
+    <div class="header-right">
+        <!-- 🔔 NOTIFICATION BELL -->
+        <div class="notification-bell" id="notificationBell">
+            <i class='bx bx-bell'></i>
+            <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+
+            <!-- Notification Dropdown -->
+            <div class="notification-dropdown" id="notificationDropdown">
+                <div class="notification-dropdown-header">
+                    <h6>Notifications</h6>
+                    <button class="mark-all-read-btn" onclick="markAllAsRead()">
+                        Mark all as read
+                    </button>
+                </div>
+                
+                <div class="notification-dropdown-body" id="notificationList">
+                    <!-- Notifications will be loaded here -->
+                    <div class="notification-empty">
+                        <i class='bx bx-bell-off'></i>
+                        <p>No notifications yet</p>
+                    </div>
+                </div>
+
+                <div class="notification-footer">
+                    <a th:href="@{/notifications}">View all notifications</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 👤 USER ACCOUNT -->
+        <div class="user-account" id="userAccount">
+            <div class="user-account-trigger">
+                <span th:if="${currentUser != null}" 
+                    th:text="${#strings.toUpperCase(currentUser.username)}"
+                    class="user-name">
+                </span>
+                <div th:if="${currentUser != null}"
+                     th:text="${#strings.substring(currentUser.username, 0, 1).toUpperCase()}"
+                     class="user-avatar">
+                </div>
+                <img th:if="${currentUser == null}" 
+                     th:src="@{/assets/pstmnIcon.png}" 
+                     alt="Profile Image"
+                     class="user-avatar"/>
+            </div>
+
+            <!-- User Dropdown -->
+            <div class="user-dropdown" id="userDropdown">
+                <div class="user-dropdown-header">
+                    <i class="fas fa-user-circle"></i>
+                    <h6 th:text="${currentUser != null ? currentUser.username : 'User'}">User</h6>
+                </div>
+                
+                <div class="user-dropdown-body">
+                    <a th:href="@{/settings}" class="user-dropdown-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Account Settings</span>
+                    </a>
+
+                    <!-- 📚 KNOWLEDGE BASE -->
+                    <a th:href="@{/knowledge-base}" class="user-dropdown-item">
+                        <i class="fas fa-book-open"></i>
+                        <span>Knowledge Base</span>
+                    </a>
+                    
+                    <!-- 🌙 THEME TOGGLE SLIDER -->
+                    <div class="theme-toggle-item" onclick="toggleThemeFromSlider(event)">
+                        <div class="theme-toggle-label">
+                            <i class="fas fa-adjust"></i>
+                            <span>Dark Mode</span>
+                        </div>
+                        <label class="theme-switch" onclick="event.stopPropagation()">
+                            <input type="checkbox" id="themeToggleCheckbox">
+                            <span class="theme-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="user-dropdown-divider"></div>
+                    <a th:href="@{/logout}" class="user-dropdown-item logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Sign Out</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Initialize theme toggle checkbox state
+            const checkbox = document.getElementById('themeToggleCheckbox');
+            const savedTheme = localStorage.getItem('theme');
+            if (checkbox) {
+                checkbox.checked = savedTheme === 'dark';
+            }
+            
+            // Notification Bell Toggle
+            const notificationBell = document.getElementById('notificationBell');
+            const notificationDropdown = document.getElementById('notificationDropdown');
+            
+            if (notificationBell) {
+                notificationBell.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    // Close user dropdown if open
+                    document.getElementById('userDropdown')?.classList.remove('show');
+                    
+                    notificationDropdown.classList.toggle('show');
+                    
+                    if (notificationDropdown.classList.contains('show')) {
+                        loadNotifications();
+                    }
+                });
+            }
+
+            // User Account Toggle
+            const userAccount = document.getElementById('userAccount');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            if (userAccount) {
+                userAccount.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    // Close notification dropdown if open
+                    document.getElementById('notificationDropdown')?.classList.remove('show');
+                    
+                    userDropdown.classList.toggle('show');
+                });
+            }
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                const notifBell = document.getElementById('notificationBell');
+                const notifDropdown = document.getElementById('notificationDropdown');
+                const userAcc = document.getElementById('userAccount');
+                const userDrop = document.getElementById('userDropdown');
+                
+                if (notifBell && !notifBell.contains(e.target)) {
+                    notifDropdown?.classList.remove('show');
+                }
+                
+                if (userAcc && !userAcc.contains(e.target)) {
+                    userDrop?.classList.remove('show');
+                }
+            });
+
+            // Theme toggle checkbox event
+            if (checkbox) {
+                checkbox.addEventListener('change', function() {
+                    toggleTheme();
+                });
+            }
+
+            // Initial badge load
+            updateBadgeCount();
+
+            // Poll for new notifications every 30 seconds
+            setInterval(updateBadgeCount, 30000);
+        });
+
+        // Toggle theme function (called from checkbox or item click)
+        function toggleTheme() {
+            const body = document.body;
+            const checkbox = document.getElementById('themeToggleCheckbox');
+            
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            
+            if (checkbox) {
+                checkbox.checked = isDark;
+            }
+        }
+
+        // Toggle theme when clicking the item (not just the switch)
+        function toggleThemeFromSlider(event) {
+            // Only toggle if not clicking directly on the switch
+            if (!event.target.closest('.theme-switch')) {
+                toggleTheme();
+            }
+        }
+
+        // Load notifications
+        function loadNotifications() {
+            fetch('/notifications/api/recent')
+                .then(response => response.json())
+                .then(notifications => {
+                    const listContainer = document.getElementById('notificationList');
+                    
+                    if (notifications.length === 0) {
+                        listContainer.innerHTML = `
+                            <div class="notification-empty">
+                                <i class='bx bx-bell-off'></i>
+                                <p>No notifications yet</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    listContainer.innerHTML = notifications.map(notif => `
+                        <div class="notification-item ${!notif.isRead ? 'unread' : ''}" 
+                            onclick="handleNotificationClick(
+                                ${notif.notificationId}, 
+                                '${notif.link || ''}',
+                                ${notif.documentId || 'null'},
+                                ${notif.isOwner || false}
+                            )">
+                            <div class="notification-item-header">
+                                <div class="notification-icon ${notif.type === 'document_shared' ? 'document' : 'comment'}">
+                                    <i class='bx ${notif.type === 'document_shared' ? 'bx-file' : 'bx-comment'}'></i>
+                                </div>
+                                <div class="notification-content">
+                                    <div class="notification-title">${notif.title}</div>
+                                    <div class="notification-message">${notif.message}</div>
+                                    <div class="notification-time">${formatTime(notif.createdAt)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                })
+                .catch(err => console.error('Error loading notifications:', err));
+        }
+
+        // Handle notification click
+        function handleNotificationClick(notificationId, link, documentId, isOwner) {
+            // Mark notification as read
+            fetch(`/notifications/api/${notificationId}/mark-read`, {
+                method: 'POST'
+            }).then(() => {
+                updateBadgeCount();
+                
+                // Check if we have a document ID
+                if (documentId) {
+                    // Determine target page based on ownership
+                    const targetPage = isOwner ? '/myfiles' : '/shared';
+                    
+                    // Store document ID for auto-modal
+                    sessionStorage.setItem('openDocumentModal', documentId);
+                    
+                    // Redirect to appropriate page
+                    window.location.href = targetPage;
+                    return;
+                }
+                
+                // Fallback: Extract document ID from link if available
+                if (link && (link.includes('/documents/details/') || link.includes('/documents/'))) {
+                    const docId = link.split('/').filter(part => part && !isNaN(part)).pop();
+                    if (docId) {
+                        window.location.href = `/notifications#doc-${docId}`;
+                        return;
+                    }
+                }
+                
+                // For other links or if no docId found, navigate normally
+                if (link) {
+                    window.location.href = link;
+                }
+            });
+        }
+
+        // Mark all as read
+        function markAllAsRead() {
+            fetch('/notifications/api/mark-all-read', {
+                method: 'POST'
+            })
+            .then(() => {
+                updateBadgeCount();
+                loadNotifications();
+            });
+        }
+
+        // Update badge count
+        function updateBadgeCount() {
+            fetch('/notifications/api/unread-count')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('notificationBadge');
+                    if (badge) {
+                        if (data.count > 0) {
+                            badge.textContent = data.count > 99 ? '99+' : data.count;
+                            badge.style.display = 'flex';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(err => console.error('Error updating badge:', err));
+        }
+
+        // Format time
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMins / 60);
+            const diffDays = Math.floor(diffHours / 24);
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            if (diffHours < 24) return `${diffHours}h ago`;
+            if (diffDays < 7) return `${diffDays}d ago`;
+            return date.toLocaleDateString();
+        }
+    </script>
+    
+    
+    
+</header>
+
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Add User Modal -->
+<div th:fragment="addUserModal" id="addUserModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-plus me-2"></i>Add New User</h3>
+            <span class="close" onclick="closeAddUserModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="addUserForm" th:action="@{/devtools/users/add}" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Username <span class="text-danger">*</span></label>
+                    <input type="text" 
+                        class="form-control" 
+                        id="addUsername" 
+                        name="username"
+                        placeholder="Enter username"
+                        required>
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle"></i> Username must be unique
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                    <input type="email" 
+                        class="form-control" 
+                        id="addEmail" 
+                        name="email"
+                        placeholder="Enter email address"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password <span class="text-danger">*</span></label>
+                    <input type="password" 
+                        class="form-control" 
+                        id="addPassword" 
+                        name="password"
+                        minlength="6"
+                        placeholder="Enter password"
+                        required>
+                    <small class="form-text text-muted">Minimum 6 characters</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                    <input type="password" 
+                        class="form-control" 
+                        id="ConfirmPassword"
+                        name="ConfirmPassword"
+                        minlength="6"
+                        placeholder="Confirm password"
+                        required>
+                    <small class="form-text text-danger" id="addPasswordMatchError" style="display:none;">
+                        Passwords do not match!
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Position <span class="text-danger">*</span></label>
+                    <select class="form-select" id="addPosition" name="positionId" required>
+                        <option value="">Select Position</option>
+                        <option th:each="position : ${jobPositions}" 
+                                th:value="${position.id}" 
+                                th:text="${position.name}"></option>
+                    </select>
+                </div>
+
+                <!-- ✅ Office FIRST -->
+                <div class="mb-3">
+                    <label class="form-label">Office <span class="text-danger">*</span></label>
+                    <select class="form-select" id="addOffice" name="officeId" required>
+                        <option value="">Select Office</option>
+                        <option th:each="office : ${offices}" 
+                                th:value="${office.officeId}" 
+                                th:text="${office.officeName + ' - ' + office.area.name}"></option>
+                    </select>
+                </div>
+
+                <!-- ✅ Department AFTER Office — starts disabled until office is chosen -->
+                <div class="mb-3">
+                    <label class="form-label">Department</label>
+                    <select class="form-select" id="addDepartment" name="departmentId" disabled>
+                        <option value="">Select office first</option>
+                    </select>
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle"></i> Optional — depends on selected office
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Role <span class="text-danger">*</span></label>
+                    <select class="form-select" id="addRole" name="roleId" required>
+                        <option value="">Select Role</option>
+                        <option th:each="role : ${roles}" 
+                                th:value="${role.id}" 
+                                th:text="${role.name}"
+                                th:if="${role.name != 'ADMIN'}"></option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" 
+                            class="btn btn-secondary" 
+                            onclick="closeAddUserModal()">
+                        Cancel
+                    </button>
+                    <button type="button" 
+                            class="btn btn-primary" 
+                            id="addUserBtn" 
+                            onclick="confirmAddUser()">
+                        <i class="fas fa-user-plus me-2"></i>Add User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div th:fragment="editUserModal" id="editUserModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-edit me-2"></i>Edit User</h3>
+            <span class="close" onclick="closeEditModal()">&times;</span>
+        </div>
+        
+        <div class="modal-body">
+            <form id="editUserForm" th:action="@{/devtools/users/update}" method="post">
+                <input type="hidden" id="editUserId" name="userId">
+                <input type="hidden" id="editIsActive">
+
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="editUsername" 
+                           name="username"
+                           readonly
+                           style="background-color: #e9ecef; cursor: not-allowed;">
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle"></i> Username cannot be changed (used in document references)
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" 
+                           class="form-control" 
+                           id="editEmail" 
+                           name="email"
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Position</label>
+                    <select class="form-select" id="editPosition" name="positionId" required>
+                        <option value="">Select Position</option>
+                        <option th:each="position : ${jobPositions}" 
+                                th:value="${position.id}" 
+                                th:text="${position.name}"></option>
+                    </select>
+                </div>
+
+                <!-- ✅ Office FIRST -->
+                <div class="mb-3">
+                    <label class="form-label">Office</label>
+                    <select class="form-select" id="editOffice" name="officeId" required>
+                        <option value="">Select Office</option>
+                        <option th:each="office : ${offices}" 
+                                th:value="${office.officeId}" 
+                                th:text="${office.officeName + ' - ' + office.area.name}"></option>
+                    </select>
+                </div>
+
+                <!-- ✅ Department AFTER Office — populated by JS via loadDepartments() -->
+                <div class="mb-3">
+                    <label class="form-label">Department</label>
+                    <select class="form-select" id="editDepartment" name="departmentId" disabled>
+                        <option value="">Loading...</option>
+                    </select>
+                    <small class="form-text text-muted">
+                        <i class="fas fa-info-circle"></i> Optional — depends on selected office
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Role</label>
+                    <select class="form-select" id="editRole" name="roleId" required>
+                        <option th:each="role : ${roles}" 
+                                th:value="${role.id}" 
+                                th:text="${role.name}"></option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="button" 
+                            class="btn btn-danger" 
+                            id="archiveUserBtn"
+                            onclick="confirmArchiveUser()">
+                        <i class="fas fa-archive me-2"></i><span id="archiveButtonText">Archive User</span>
+                    </button>
+                    <div class="d-flex gap-2">
+                        <button type="button" 
+                                class="btn btn-secondary" 
+                                onclick="closeEditModal()">
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="confirmEditUser()">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div th:fragment="resetPasswordModal" id="resetPasswordModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-key me-2"></i>Reset Password</h3>
+            <span class="close" onclick="closeResetPasswordModal()">&times;</span>
+        </div>
+        
+        <div class="modal-body">
+            <form id="resetPasswordForm" th:action="@{/devtools/users/reset-password}" method="post">
+                <input type="hidden" id="resetUserId" name="userId">
+                
+                <div class="alert alert-warning mb-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    You are resetting the password for: <strong id="resetUsername"></strong>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">New Password</label>
+                    <input type="password" 
+                           class="form-control" 
+                           id="newPassword" 
+                           name="newPassword"
+                           minlength="6"
+                           required>
+                    <small class="form-text text-muted">Minimum 6 characters</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Confirm Password</label>
+                    <input type="password" 
+                           class="form-control" 
+                           id="confirmPassword"
+                           minlength="6"
+                           required>
+                    <small class="form-text text-danger" id="passwordMatchError" style="display:none;">
+                        Passwords do not match!
+                    </small>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" 
+                            class="btn btn-secondary" 
+                            onclick="closeResetPasswordModal()">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-warning" id="resetPasswordBtn" onclick="confirmResetPassword()">
+                        <i class="fas fa-key me-2"></i>Reset Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

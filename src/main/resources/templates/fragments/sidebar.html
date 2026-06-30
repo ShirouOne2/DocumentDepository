@@ -1,0 +1,141 @@
+<div th:fragment="main-sidebar" class="l-navbar" id="nav-bar">
+    <nav class="nav">
+        <div> 
+            <a href="#top" class="nav_logo">
+                <img src="/assets/pstmnIcon.png"
+                     alt="Philpost Icon"
+                     class="sidebar-logo icon-logo">
+
+                <span class="nav_logo-name"><i>
+                    PHL<span class="logo-red-accent">POST</span>
+                    <div class="logo-subtitle">Document Depository</div></i>
+                </span>
+            </a>
+
+            <div class="nav_list"> 
+
+                <a th:href="@{/dashboard}"
+                   class="nav_link"
+                   th:classappend="${activePage == 'dashboard'} ? ' active'">
+                    <i class='bx bx-grid-alt nav_icon'></i>
+                    <span class="nav_name">Dashboard</span>
+                </a>
+
+                <a th:href="@{/uploadpage}"
+                   class="nav_link"
+                   th:classappend="${activePage == 'upload'} ? ' active'">
+                    <i class='bx bx-cloud-upload nav_icon'></i>
+                    <span class="nav_name">Upload</span>
+                </a>
+                
+                <a th:href="@{/myfiles}"
+                   class="nav_link"
+                   th:classappend="${activePage == 'myfiles'} ? ' active'">
+                    <i class='bx bx-folder nav_icon'></i>
+                    <span class="nav_name">My Docs</span>
+                </a>
+
+                <a th:href="@{/shared}"
+                   class="nav_link"
+                   th:classappend="${activePage == 'shared'} ? ' active'">
+                    <i class='bx bx-share-alt nav_icon'></i>
+                    <span class="nav_name">All Records</span>
+                </a>
+
+                <a th:href="@{/notifications}"
+                class="nav_link"
+                th:classappend="${activePage == 'notifications'} ? ' active'"
+                style="position: relative;">
+                    <i class='bx bx-bell nav_icon'></i>
+                    <span class="nav_name">Notifications</span>
+                    <span class="notification-count-badge" 
+                        id="sidebarNotifBadge" 
+                        style="display: none; 
+                                position: absolute; 
+                                right: 1rem; 
+                                background: #E8392F; 
+                                color: white; 
+                                font-size: 0.65rem; 
+                                padding: 0.2rem 0.4rem; 
+                                border-radius: 10px; 
+                                font-weight: 700;">
+                        0
+                    </span>
+                </a>
+                <a th:href="@{/archived}"
+                   class="nav_link"
+                   th:classappend="${activePage == 'archived'} ? ' active'">
+                    <i class='bx bx-archive nav_icon'></i>
+                    <span class="nav_name">Archived</span>
+                </a>
+                <!-- ADMIN ONLY SECTION -->
+                <a th:if="${isAdmin}" 
+                th:href="@{/admin/search-analytics}"
+                class="nav_link"
+                th:classappend="${activePage == 'analytics'} ? ' active'">
+                    <i class='bx bx-bar-chart nav_icon'></i>
+                    <span class="nav_name">Analytics</span>
+                </a>
+
+                <a th:if="${isAdmin}" 
+                th:href="@{/admin/file-integrity}"
+                class="nav_link"
+                th:classappend="${activePage == 'file-integrity'} ? ' active'">
+                    <i class='bx bx-shield nav_icon'></i>
+                    <span class="nav_name">File Integrity</span>
+                </a>
+
+                <!-- ✨ NEW: Custom Viewer Groups -->
+                <a th:if="${isAdmin}" 
+                th:href="@{/admin/custom-viewer-groups}"
+                class="nav_link"
+                th:classappend="${activePage == 'custom-viewer-groups'} ? ' active'">
+                    <i class='bx bx-group nav_icon'></i>
+                    <span class="nav_name">Viewer Groups</span>
+                </a>
+
+                <a th:if="${isAdmin}" th:href="@{/settings}"
+                   class="nav_link"
+                   th:classappend="${activePage == 'settings'} ? ' active'">
+                    <i class='bx bx-cog nav_icon'></i>
+                    <span class="nav_name">Settings</span>
+                </a>
+
+                <a th:if="${isAdmin}"
+                th:href="@{/devtools}"
+                class="nav_link"
+                th:classappend="${activePage == 'devtools'} ? ' active'">
+                    <i class="bx bx-wrench nav_icon"></i>
+                    <span class="nav_name">DevTools</span>
+                </a>
+
+            </div>
+        </div> 
+
+        <a th:if="${isAdmin}" th:href="@{/logout}" class="nav_link"> 
+            <i class='bx bx-log-out nav_icon'></i> 
+            <span class="nav_name">Sign Out</span> 
+        </a>
+    </nav>
+    <script>
+        // Update sidebar notification badge
+        function updateSidebarBadge() {
+            fetch('/notifications/api/unread-count')
+                .then(response => response.json())
+                .then(data => {
+                    const sidebarBadge = document.getElementById('sidebarNotifBadge');
+                    if (sidebarBadge && data.count > 0) {
+                        sidebarBadge.textContent = data.count > 99 ? '99+' : data.count;
+                        sidebarBadge.style.display = 'flex';
+                    } else if (sidebarBadge) {
+                        sidebarBadge.style.display = 'none';
+                    }
+                })
+                .catch(err => console.error('Error updating sidebar badge:', err));
+        }
+    
+        // Update every 30 seconds
+        setInterval(updateSidebarBadge, 30000);
+        updateSidebarBadge(); // Initial load
+    </script>
+</div>

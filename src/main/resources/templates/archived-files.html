@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main-layout :: document('Archived Files', ~{::content})}">
+
+<div th:fragment="content">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" th:href="@{/css/sharedfiles.css}">
+
+    <div class="form-container">
+        <div class="page-header">
+            <h4>
+                <i class="fas fa-archive me-2"></i>Archived Files
+                <span th:if="${isAdmin}" class="badge bg-danger ms-2" style="font-size: 0.7rem;">
+                    Admin View - All Archived Documents
+                </span>
+                <span th:unless="${isAdmin}" class="badge bg-secondary ms-2" style="font-size: 0.7rem;">
+                    Your Archived Documents
+                </span>
+            </h4>
+            <p class="text-muted small mb-0">
+                <i class="fas fa-info-circle me-1"></i>
+                Viewing archived documents (excludes old versions, includes broken links)
+            </p>
+        </div>
+
+        <div class="page-body">
+
+            <div class="form-section search-section">
+                <form th:action="@{/archived/search}" method="get">
+                    
+                    <!-- Search Box Section -->
+                    <div class="search-box-wrapper">
+                        <div class="search-label">
+                            <i class="fas fa-search"></i>
+                            <span>Search Archived Documents</span>
+                        </div>
+                        
+                        <div class="search-input-group">
+                            <div class="search-input-wrapper">
+                                <div class="search-icon-prefix">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </div>
+                                <input 
+                                    type="text"
+                                    name="query"
+                                    th:value="${query}"
+                                    placeholder="Search by title, description, or tags..."
+                                    autocomplete="off">
+                                <button type="submit" class="search-btn">
+                                    <i class="fas fa-search"></i>
+                                    <span>Search</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="search-hint">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Search across titles, descriptions, and tags. Use spaces to separate multiple keywords.</span>
+                        </div>
+                    </div>
+
+                    <!-- Filters Section -->
+                    <div class="filters-wrapper">
+                        <div class="filter-divider">
+                            <div class="filter-divider-line"></div>
+                            <div class="filter-divider-text">
+                                <i class="fas fa-sliders"></i>
+                                <span>Advanced Filters</span>
+                            </div>
+                            <div class="filter-divider-line"></div>
+                        </div>
+
+                        <div class="row g-3">
+                            <!-- Row 1: Classification, Uploaded By, Archived From Date, Archived To Date -->
+                            <div class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-folder me-1"></i>
+                                        Classification
+                                    </label>
+                                    <select class="filter-control" name="classificationId">
+                                        <option value="">All Classifications</option>
+                                        <option th:each="c : ${classifications}"
+                                                th:value="${c.id}"
+                                                th:text="${c.name}"
+                                                th:selected="${selectedClassification == c.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        
+                            <div class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-user me-1"></i>
+                                        Uploaded By
+                                    </label>
+                                    <select class="filter-control" name="uploadedById">
+                                        <option value="">All Users</option>
+                                        <option th:each="u : ${uploaders}"
+                                                th:value="${u.userId}"
+                                                th:text="${u.username}"
+                                                th:selected="${selectedUploader == u.userId}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        
+                            <div class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        Archived From Date
+                                    </label>
+                                    <input 
+                                        type="date"
+                                        class="filter-control"
+                                        name="startDate"
+                                        th:value="${startDate}">
+                                </div>
+                            </div>
+                        
+                            <div class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-calendar-check me-1"></i>
+                                        Archived To Date
+                                    </label>
+                                    <input 
+                                        type="date"
+                                        class="filter-control"
+                                        name="endDate"
+                                        th:value="${endDate}">
+                                </div>
+                            </div>
+                        
+                            <!-- Row 2 (Admin Only): Area, Office, Department, Custom Group -->
+                            <div th:if="${isAdmin}" class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-crown me-1"></i>
+                                        Area (Admin)
+                                    </label>
+                                    <select class="filter-control" name="filterAreaId">
+                                        <option value="">All Areas</option>
+                                        <option th:each="area : ${areas}"
+                                                th:value="${area.id}"
+                                                th:text="${area.name}"
+                                                th:selected="${filterAreaId == area.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        
+                            <div th:if="${isAdmin}" class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-crown me-1"></i>
+                                        Office (Admin)
+                                    </label>
+                                    <select class="filter-control" name="filterOfficeId">
+                                        <option value="">All Offices</option>
+                                        <option th:each="office : ${offices}"
+                                                th:value="${office.officeId}"
+                                                th:text="${office.officeName}"
+                                                th:selected="${filterOfficeId == office.officeId}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        
+                            <div th:if="${isAdmin}" class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-crown me-1"></i>
+                                        Department (Admin)
+                                    </label>
+                                    <select class="filter-control" name="filterDepartmentId">
+                                        <option value="">All Departments</option>
+                                        <option th:each="dept : ${departments}"
+                                                th:value="${dept.id}"
+                                                th:text="${dept.name}"
+                                                th:selected="${filterDepartmentId == dept.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        
+                            <div th:if="${isAdmin}" class="col-md-3">
+                                <div class="filter-group">
+                                    <label class="filter-label">
+                                        <i class="fas fa-users-cog me-1"></i>
+                                        Custom Group (Admin)
+                                    </label>
+                                    <select class="filter-control" name="customGroupId">
+                                        <option value="">All Custom Groups</option>
+                                        <option th:each="customGroup : ${customViewerGroups}"
+                                                th:value="${customGroup.groupId}"
+                                                th:text="${customGroup.groupName + ' (' + customGroup.memberCount + ' members)'}"
+                                                th:selected="${customGroupId == customGroup.groupId}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="filter-actions">
+                            <a th:href="@{/archived}" class="btn-reset">
+                                <i class="fas fa-rotate-right"></i>
+                                <span>Clear All Filters</span>
+                            </a>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="form-section">
+                <div class="section-title">
+                    <i class="fas fa-archive me-2"></i>Archived Documents
+                    <span class="badge bg-secondary ms-2">
+                        <span th:text="${totalItems}">0</span> archived files
+                    </span>
+                </div>
+
+                <button onclick="confirmExport()" class="btn btn-success btn-sm mb-3">
+                    <i class="fas fa-file-excel"></i> Export Search Results
+                </button>
+
+                <div th:if="${not #lists.isEmpty(documents)}" class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Status</th>
+                                <th>Classification</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Upload Date</th>
+                                <th>Archived Date</th>
+                                <th>Archived By</th>
+                                <th>Tags</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr th:each="doc, i : ${documents}">
+                                <td th:text="${i.index + 1 + (currentPage * 50)}"></td>
+                                
+                                <!-- Status Column with Broken Link Indicator -->
+                                <td>
+                                    <span th:if="${@archivedFilesController.fileExists(doc)}" 
+                                          class="badge bg-success" 
+                                          title="File exists">
+                                        <i class="fas fa-check"></i> OK
+                                    </span>
+                                    <span th:unless="${@archivedFilesController.fileExists(doc)}" 
+                                          class="badge bg-danger" 
+                                          title="File not found in storage">
+                                        <i class="fas fa-unlink"></i> Broken Link
+                                    </span>
+                                </td>
+                                
+                                <td>
+                                    <span class="badge bg-secondary" th:text="${doc.documentClassification.name}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${doc.title}"></span>
+                                    <span th:unless="${@archivedFilesController.fileExists(doc)}" 
+                                          class="text-danger ms-1" 
+                                          title="This document's file is missing from storage">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </span>
+                                </td>
+                                <td class="text" style="max-width: 300px" th:text="${doc.description ?: '-'}"></td>
+                                <td class="text-muted small" th:text="${doc.uploadDate != null ? #temporals.format(doc.uploadDate, 'yyyy-MM-dd HH:mm') : '-'}"></td>
+                                <td class="text-muted small">
+                                    <i class="fas fa-archive me-1 text-warning"></i>
+                                    <span th:text="${doc.archivedDate != null ? #temporals.format(doc.archivedDate, 'yyyy-MM-dd HH:mm') : '-'}"></span>
+                                </td>
+                                <td class="text-muted small" th:text="${doc.archivedBy != null ? doc.archivedBy.username : 'System'}"></td>
+                                
+                                <td>
+                                    <div th:if="${doc.tags != null and !doc.tags.isEmpty()}" 
+                                         style="display: flex; flex-wrap: wrap; gap: 0.25rem;">
+                                        <span th:each="tag : ${doc.tags}" 
+                                              class="badge"
+                                              style="background-color: #fcebea; 
+                                                     color: #E8392F; 
+                                                     font-size: 0.65rem; 
+                                                     font-weight: 600; 
+                                                     padding: 0.2rem 0.5rem;">
+                                            <i class="fas fa-tag" style="font-size: 0.6rem;"></i>
+                                            <span th:text="${tag.tagName}">tag</span>
+                                        </span>
+                                    </div>
+                                    <span th:if="${doc.tags == null or doc.tags.isEmpty()}" 
+                                          class="text-muted" 
+                                          style="font-size: 0.7rem;">
+                                        No tags
+                                    </span>
+                                </td>
+                                
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary btn-view"
+                                            th:data-id="${doc.documentId}"
+                                            title="View details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    
+                                    <!-- Download button - disabled for broken links -->
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            th:onclick="'downloadDocument(' + ${doc.documentId} + ')'"
+                                            th:disabled="${!@archivedFilesController.fileExists(doc)}"
+                                            th:title="${@archivedFilesController.fileExists(doc) ? 'Download' : 'File not found in storage'}">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    
+                                    <!-- Restore button - only for owner or admin, disabled for broken links -->
+                                    <button class="btn btn-sm btn-outline-success btn-restore"
+                                            th:data-id="${doc.documentId}"
+                                            th:data-title="${doc.title}"
+                                            th:data-broken="${!@archivedFilesController.fileExists(doc)}"
+                                            th:if="${isAdmin or doc.uploadedBy.userId == currentUser.userId}"
+                                            th:disabled="${!@archivedFilesController.fileExists(doc)}"
+                                            th:title="${@archivedFilesController.fileExists(doc) ? 'Restore document' : 'Cannot restore - file not found'}">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div th:replace="~{fragments/pagination :: pagination(${currentPage}, ${totalPages}, '/archived')}"></div>
+                
+                <div th:if="${#lists.isEmpty(documents)}"
+                     class="alert alert-info text-center">
+                    <i class="fas fa-archive me-2"></i>
+                    No archived documents found.
+                </div>
+
+                <!-- Document Viewer Modal (Read-only for archived files) -->
+                <div id="documentViewerModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>
+                                <i class="fas fa-file-alt"></i>
+                                <span id="modalDocTitle">Document Title</span>
+                                <span class="badge bg-warning ms-2">
+                                    <i class="fas fa-archive"></i> Archived
+                                </span>
+                                <span id="modalBrokenBadge" class="badge bg-danger ms-2" style="display: none;">
+                                    <i class="fas fa-unlink"></i> Broken Link
+                                </span>
+                            </h2>
+                            <span class="close" onclick="closeDocumentModal()">&times;</span>
+                        </div>
+
+                        <div class="modal-body">
+                            
+                            <!-- Broken Link Alert -->
+                            <div id="brokenLinkAlert" class="alert alert-danger" style="display: none;">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>File Not Found:</strong> The physical file for this document is missing from storage. 
+                                View and download actions are disabled. Only metadata is available.
+                            </div>
+
+                            <!-- ACTIONS -->
+                            <div class="viewer-actions">
+                                <button id="btnViewModal" class="btn btn-primary" onclick="viewDocumentNewTab()">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button id="btnDownloadModal" class="btn btn-secondary" onclick="downloadDocument()">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                                <!-- Restore button in modal -->
+                                <button class="btn btn-success" 
+                                        id="btnRestoreModal"
+                                        onclick="restoreDocumentFromModal()"
+                                        style="display: none;">
+                                    <i class="fas fa-undo"></i> Restore
+                                </button>
+                            </div>
+                        
+                            <!-- DOCUMENT INFO -->
+                            <div class="document-info">
+                                <h3>
+                                    <i class="fas fa-info-circle me-2"></i>Document Information
+                                </h3>
+                        
+                                <table class="info-table">
+                                    <tr><td>File Status</td><td id="infoFileStatus">-</td></tr>
+                                    <tr><td>Filename</td><td id="infoFilename">-</td></tr>
+                                    <tr><td>Uploaded By</td><td id="infoUploadedBy">-</td></tr>
+                                    <tr><td>Upload Date</td><td id="infoUploadDate">-</td></tr>
+                                    <tr><td>Archived Date</td><td id="infoArchivedDate">-</td></tr>
+                                    <tr><td>Archived By</td><td id="infoArchivedBy">-</td></tr>
+                                    <tr><td>Classification</td><td id="infoClassification">-</td></tr>
+                                    <tr><td>Tags</td><td><div id="infoTags">-</div></td></tr>
+                                    <tr><td>Shared With</td><td id="infoViewerGroup">-</td></tr>
+                                    <tr><td>Description</td><td><div id="infoDescription">-</div></td></tr>
+                                </table>
+                            </div>
+                        
+                            <!-- COMMENTS (Read-only) -->
+                            <div class="comments-section">
+                                <h3>
+                                    <i class="fas fa-comments me-2"></i>
+                                    Comments (<span id="commentCount">0</span>)
+                                    <span class="badge bg-secondary ms-2" style="font-size: 0.7rem;">Read-only</span>
+                                </h3>
+                                
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Comments are read-only for archived documents.
+                                </div>
+                        
+                                <div id="commentsList"></div>
+                            </div>
+                        
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Set variables for JavaScript -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Admin status
+        const isAdminUser = /*[[${isAdmin}]]*/ false;
+        
+        // Export variables
+        const totalItems = /*[[${totalItems}]]*/ 0;
+        const query = /*[[${query}]]*/ '';
+        const classificationId = /*[[${selectedClassification}]]*/ null;
+        const uploadedById = /*[[${selectedUploader}]]*/ null;
+        const startDate = /*[[${startDate}]]*/ '';
+        const endDate = /*[[${endDate}]]*/ '';
+        const filterAreaId = /*[[${filterAreaId}]]*/ null;
+        const filterOfficeId = /*[[${filterOfficeId}]]*/ null;
+        const filterDepartmentId = /*[[${filterDepartmentId}]]*/ null;
+        const customGroupId = /*[[${customGroupId}]]*/ null;
+        /*]]>*/
+    </script>
+    
+    <!-- Archived files JavaScript -->
+    <script th:src="@{/js/archived-files-manager.js}"></script>
+
+</div>
+</html>

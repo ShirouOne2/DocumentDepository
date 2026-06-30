@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout/main-layout :: document('Dashboard', ~{::content})">
+
+<div th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    
+    <!-- Large Date and Time Display -->
+    <div class="section-card hero-card">
+        <div class="hero-greeting">
+            Good <span id="greeting">day</span>,
+            <strong th:text="${currentUser.username}">User</strong>!
+        </div>
+    
+        <div id="currentTime" class="hero-time">
+            12:00 PM
+        </div>
+    
+        <div id="currentDate" class="hero-date">
+            Wednesday, January 28, 2026
+        </div>
+    
+        <div class="hero-location">
+            <i class="fas fa-map-marker-alt me-1"></i>
+            <span>Philippines</span>
+        </div>
+    </div>
+
+    <!-- Admin Stats (Only for admin) -->
+    <div class="stats-grid" th:if="${isAdmin}">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-value" th:text="${totalUploads}">0</div>
+                    <div class="stat-label">Total Documents</div>
+                </div>
+                <div class="stat-icon red">
+                    <i class="bx bx-file"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-value" th:text="${uploadsToday}">0</div>
+                    <div class="stat-label">Uploaded Today</div>
+                </div>
+                <div class="stat-icon blue">
+                    <i class="bx bx-upload"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-value">
+                        <span th:text="${onlineUsers}">0</span>
+                        <span style="font-size: 1rem; color: #6b7280;">/</span>
+                        <span style="font-size: 1rem; color: #6b7280;" th:text="${totalUsers}">0</span>
+                    </div>
+                    <div class="stat-label">
+                        <span class="badge-online"></span>Users Online
+                    </div>
+                </div>
+                <div class="stat-icon green">
+                    <i class="bx bx-user-check"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-value" th:text="${totalUsers}">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-icon purple">
+                    <i class="bx bx-group"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-grid">
+        <div>
+            <!-- Quick Actions -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span><i class="fas fa-bolt me-2"></i>Quick Actions</span>
+                </div>
+                <div class="section-body quick-actions-body">
+                    <a th:href="@{/uploadpage}" class="quick-action">
+                        <i class="bx bx-upload"></i>Upload Document
+                    </a>
+                    <a th:href="@{/myfiles}" class="quick-action">
+                        <i class="bx bx-folder"></i>My Documents
+                    </a>
+                    <a th:href="@{/shared}" class="quick-action">
+                        <i class="bx bx-search"></i>Search Documents
+                    </a>
+                    <a th:href="@{/settings}" class="quick-action">
+                        <i class="bx bx-cog"></i>Settings
+                    </a>
+                    <a th:if="${isAdmin}" th:href="@{/devtools}" class="quick-action">
+                        <i class="bx bx-wrench"></i>Developer Tools
+                    </a>
+                    <a th:if="${isAdmin}" th:href="@{/archived}" class="quick-action">
+                        <i class="bx bx-user-circle"></i>Archived
+                    </a>
+                </div>
+            </div>
+
+            <!-- My Documents by Type (Admin only) -->
+            <div class="section-card" th:if="${isAdmin}">
+                <div class="section-header">
+                    <span><i class="fas fa-chart-pie me-2"></i>Document Distribution</span>
+                </div>
+                <div class="section-body distribution-body">
+                    <div th:if="${#lists.isEmpty(documentsByClassification)}" class="empty-state">
+                        <i class="bx bx-pie-chart-alt"></i>
+                        <p>No data available</p>
+                    </div>
+                    <div th:if="${!#lists.isEmpty(documentsByClassification)}">
+                        <div class="distribution-item" th:each="item : ${documentsByClassification}">
+                            <div class="distribution-label" th:text="${item.name}">Classification</div>
+                            <div class="distribution-count" th:text="${item.count}">0</div>
+                            <div class="distribution-bar">
+                                <div class="distribution-fill" 
+                                     th:style="'width: ' + ${(item.count * 100.0 / totalUploads)} + '%'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <!-- My Recent Documents (User) / Recent Uploads (Admin) -->
+            <div class="section-card">
+                <div class="section-header">
+                    <span><i class="fas fa-clock me-2"></i>
+                        <span th:if="${isAdmin}">Recent Uploads (All Users)</span>
+                        <span th:if="${!isAdmin}">My Recent Documents</span>
+                    </span>
+                    <a th:if="${!isAdmin}" th:href="@{/myfiles}" style="font-size: 0.875rem; color: #6366f1; text-decoration: none;">
+                        View All
+                    </a>
+                </div>
+                <div class="section-body recent-uploads-body">
+                    <div th:if="${#lists.isEmpty(recentUploads)}" class="empty-state">
+                        <i class="bx bx-file"></i>
+                        <p th:text="${isAdmin ? 'No documents uploaded yet' : 'You haven''t uploaded any documents yet'}">No documents</p>
+                        <a th:if="${!isAdmin}" th:href="@{/uploadpage}" class="btn btn-primary mt-3" style="display: inline-block; padding: 0.5rem 1rem; background: #6366f1; color: white; text-decoration: none; border-radius: 0.5rem;">
+                            <i class="bx bx-upload me-2"></i>Upload Your First Document
+                        </a>
+                    </div>
+                    <div th:if="${!#lists.isEmpty(recentUploads)}">
+                        <div class="upload-item" 
+                             th:each="doc : ${recentUploads}"
+                             th:data-doc-id="${doc.documentId}"
+                             th:data-is-owner="${doc.isOwner}"
+                             onclick="navigateToDocument(this)"
+                             style="cursor: pointer; transition: background-color 0.2s;">
+                            <div class="upload-icon">
+                                <i class="bx bx-file"></i>
+                            </div>
+                            <div class="upload-details">
+                                <div class="upload-title" th:text="${doc.title}">Document Title</div>
+                                <div class="upload-meta">
+                                    <i class="fas fa-user me-1" th:if="${isAdmin}"></i>
+                                    <span th:if="${isAdmin}" th:text="${doc.uploadedBy}">User</span>
+                                    <span th:if="${isAdmin}" class="mx-2">•</span>
+                                    <i class="fas fa-tag me-1"></i>
+                                    <span th:text="${doc.classification}">Type</span>
+                                </div>
+                            </div>
+                            <div class="upload-time" 
+                                 th:text="${doc.uploadDate != null ? #temporals.format(doc.uploadDate, 'MMM dd, HH:mm') : 'Unknown'}">
+                                Just now
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity (Admin only) - COMBINED LOGIN + AUDIT LOGS -->
+            <div class="section-card" th:if="${isAdmin}">
+                <div class="section-header">
+                    <span><i class="fas fa-history me-2"></i>Recent Activity</span>
+                    <a th:href="@{/admin/audit-log}" 
+                       style="font-size:0.75rem; color:rgba(255,255,255,0.85); text-decoration:none; font-weight:600;">
+                        View All <i class="fas fa-arrow-right" style="font-size:0.65rem;"></i>
+                    </a>
+                </div>
+                <div class="section-body audit-body">
+                    <div th:if="${#lists.isEmpty(recentActivity)}" class="empty-state">
+                        <i class="bx bx-history"></i>
+                        <p>No activity recorded</p>
+                    </div>
+                    <div th:if="${!#lists.isEmpty(recentActivity)}">
+                        <div class="audit-item" th:each="log : ${recentActivity}">
+                            <div class="audit-avatar" th:text="${#strings.substring(log.username, 0, 1).toUpperCase()}">U</div>
+                            <div class="audit-details">
+                                <div class="audit-user" th:text="${log.username}">Username</div>
+                                <div class="audit-info">
+                                    <span class="action-badge" 
+                                        th:classappend="${log.badgeClass}"
+                                        th:text="${log.action}">ACTION</span>
+                                    <span th:if="${log.position != null && log.position != 'N/A'}">
+                                        • <span th:text="${log.position}">Position</span>
+                                    </span>
+                                    <span th:if="${log.department != null && log.department != 'N/A'}">
+                                        • <span th:text="${log.department}">Department</span>
+                                    </span>
+                                    <span th:if="${log.office != null && log.office != 'N/A'}">
+                                        • <span th:text="${log.office}">Office</span>
+                                    </span>
+                                    <span th:if="${log.endpoint != null && log.endpoint != 'N/A'}">
+                                        • <span th:text="${log.endpoint}">Endpoint</span>
+                                    </span>
+                                    <span th:if="${log.ipAddress != null && log.ipAddress != 'N/A'}">
+                                        • <i class="fas fa-map-marker-alt" style="font-size: 0.7rem;"></i>
+                                        <span th:text="${log.ipAddress}">IP</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="audit-time" th:text="${#temporals.format(log.timestamp, 'MMM dd HH:mm')}">
+                                Recent
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Existing badges */
+        .action-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-login {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-logout {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .badge-timeout {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        /* New badges */
+        .badge-upload {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .badge-view, .badge-browse {
+            background-color: #e0e7ff;
+            color: #3730a3;
+        }
+        
+        .badge-download {
+            background-color: #ddd6fe;
+            color: #5b21b6;
+        }
+        
+        .badge-edit {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-delete {
+            background-color: #ffe4e6;
+            color: #9f1239;
+        }
+        
+        .badge-action {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+    </style>
+
+    <script>
+        // Update time and date
+        function updateDateTime() {
+            const now = new Date();
+            
+            // Update time
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12;
+            const displayMinutes = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('currentTime').textContent = displayHours + ':' + displayMinutes + ' ' + ampm;
+            
+            // Update date
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', options);
+            
+            // Update greeting
+            let greeting = 'day';
+            if (hours < 12) greeting = 'morning';
+            else if (hours < 18) greeting = 'afternoon';
+            else greeting = 'evening';
+            document.getElementById('greeting').textContent = greeting;
+        }
+        
+        // Update immediately and then every second
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+        
+        // Auto-refresh stats for admin (every 10 seconds)
+        const isAdmin = /*[[${isAdmin}]]*/ false;
+        if (isAdmin) {
+            setInterval(function() {
+                fetch('/api/dashboard/stats')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) return;
+                        
+                        document.querySelectorAll('.stat-value')[0].textContent = data.totalUploads;
+                        document.querySelectorAll('.stat-value')[1].textContent = data.uploadsToday;
+                        
+                        const onlineUsersStat = document.querySelectorAll('.stat-value')[2];
+                        onlineUsersStat.innerHTML = 
+                            data.onlineUsers + 
+                            '<span style="font-size: 1rem; color: #6b7280;">/</span>' +
+                            '<span style="font-size: 1rem; color: #6b7280;">' + data.totalUsers + '</span>';
+                        
+                        document.querySelectorAll('.stat-value')[3].textContent = data.totalUsers;
+                    })
+                    .catch(error => console.error('Error updating stats:', error));
+            }, 10000);
+        }
+        
+        // Navigate to document and open modal
+        function navigateToDocument(element) {
+            const docId = element.getAttribute('data-doc-id');
+            const isOwner = element.getAttribute('data-is-owner') === 'true';
+            
+            // Determine which page to navigate to
+            const targetPage = isOwner ? '/myfiles' : '/shared';
+            
+            // Store document ID in sessionStorage to open modal on page load
+            sessionStorage.setItem('openDocumentModal', docId);
+            
+            // Navigate to the appropriate page
+            window.location.href = targetPage;
+        }
+        
+        // Add hover effect
+        document.querySelectorAll('.upload-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f3f4f6';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = 'transparent';
+            });
+        });
+    </script>
+</div>
+</html>

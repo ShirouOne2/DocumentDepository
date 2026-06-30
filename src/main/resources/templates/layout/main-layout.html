@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" 
+      th:fragment="document(pageTitle, content)">
+<head>
+    <script>
+        (function () {
+            try {
+                const theme = localStorage.getItem('theme');
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark-mode');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: 'DocDepository App'">DocDepository App</title>
+
+    <link rel="icon" type="image/x-icon" href="/assets/favicon1.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="/assets/favicon1.ico">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" crossorigin="anonymous" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.min.css">
+    <link th:href="@{/css/sidebar/sidebar-layout.css}" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/globalStyle.css}">
+
+</head>
+
+<body id="body-pd">
+
+    <!-- Header with notification bell -->
+    <div th:replace="~{fragments/header :: main-header}"></div>
+    
+    <!-- User Modal -->
+    <div id="userModal"
+         onclick="if(event.target.id==='userModal') this.style.display='none'"
+         style="display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 9999;
+                justify-content: center;
+                align-items: center;">
+        <div style="background: white;
+                    border-radius: 8px;
+                    padding: 0;
+                    min-width: 250px;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+            <div style="padding: 1.5rem; border-bottom: 1px solid #e9ecef;">
+                <h5 style="margin: 0; color: #212529;">
+                    <i class="fas fa-user-circle" style="margin-right: 0.5rem; color: #E8392F;"></i>
+                    <span th:text="${currentUser != null ? currentUser.username : 'User'}">User</span>
+                </h5>
+            </div>
+            <div style="padding: 0.5rem 0;">
+                <a th:href="@{/settings}" 
+                   style="display: block; padding: 0.75rem 1.5rem; color: #212529; text-decoration: none;"
+                   onmouseover="this.style.backgroundColor='#f8f9fa'"
+                   onmouseout="this.style.backgroundColor='transparent'">
+                    <i class="fas fa-cog" style="margin-right: 0.75rem; color: #6c757d; width: 20px;"></i>
+                    Account Settings
+                </a>
+                <div style="height: 1px; background: #e9ecef; margin: 0.5rem 0;"></div>
+                <a th:href="@{/logout}" 
+                   style="display: block; padding: 0.75rem 1.5rem; color: #dc3545; text-decoration: none;"
+                   onmouseover="this.style.backgroundColor='#f8f9fa'"
+                   onmouseout="this.style.backgroundColor='transparent'">
+                    <i class="fas fa-sign-out-alt" style="margin-right: 0.75rem; width: 20px;"></i>
+                    Sign Out
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar :: main-sidebar}"></div>
+    
+    <!-- Main Content -->
+    <main class="main-content container-fluid py-4">
+        <div th:insert="${content}"></div>
+    </main>
+    
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: main-footer}"></div>
+    
+    <!-- Header Styles -->
+    <th:block th:replace="~{fragments/header :: header-styles}"></th:block>
+
+    <!-- Scripts -->
+    <script th:src="@{/js/sidebar/sidebar-toggle.js}"></script>
+    <script th:src="@{/js/password-visibility.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.1/dist/sweetalert2.all.min.js"></script>
+    
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.body.style.overflow = 'auto';
+                document.documentElement.style.overflow = 'auto';
+            }, 1000);
+        });
+    </script>
+    
+    <script th:if="${session.userId != null}">
+        (function () {
+            if (window.__sessionTimerInitialized) return;
+            window.__sessionTimerInitialized = true;
+
+            // ─── Configuration ────────────────────────────────────────────────
+            // Must match server.servlet.session.timeout (15m).
+            // Warn 2 minutes before expiry so the user has time to react.
+            const SERVER_TIMEOUT_MS  = 15 * 60 * 1000;   // 15 minutes (matches server)
+            const WARN_BEFORE_MS     =  2 * 60 * 1000;   // warn 2 min before expiry
+            const WARN_AT_MS         = SERVER_TIMEOUT_MS - WARN_BEFORE_MS; // 13 min
+            const POLL_INTERVAL_MS   = 30 * 1000;         // poll every 30 s (passive)
+
+            let warnTimer, expireTimer;
+            let warningShown  = false;
+            let isLoggingOut  = false;
+            let lastActivity  = Date.now();
+
+            // ─── Actions ─────────────────────────────────────────────────────
+            function doLogout() {
+                if (isLoggingOut) return;
+                isLoggingOut = true;
+                window.location.replace('/session-timeout');
+            }
+
+            function showWarning() {
+                if (warningShown || isLoggingOut) return;
+                warningShown = true;
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Session Expiring Soon',
+                    html: 'You will be logged out in <strong>2 minutes</strong> due to inactivity.<br>Do you want to stay logged in?',
+                    confirmButtonText: '<i class="fas fa-check"></i> Stay Logged In',
+                    showCancelButton: true,
+                    cancelButtonText: 'Log Out Now',
+                    confirmButtonColor: '#E8392F',
+                    cancelButtonColor: '#6c757d',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    timer: WARN_BEFORE_MS,          // auto-dismiss after 2 min
+                    timerProgressBar: true
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        // User wants to stay — ping server to reset its session
+                        fetch('/session-check', { credentials: 'include' })
+                            .then(res => {
+                                if (res.status === 401) {
+                                    doLogout();
+                                } else {
+                                    // Session renewed — restart timers
+                                    warningShown = false;
+                                    lastActivity = Date.now();
+                                    resetTimers();
+                                }
+                            })
+                            .catch(doLogout);
+                    } else {
+                        // Dismissed or timed out
+                        doLogout();
+                    }
+                });
+            }
+
+            // ─── Timers ───────────────────────────────────────────────────────
+            function resetTimers() {
+                clearTimeout(warnTimer);
+                clearTimeout(expireTimer);
+                warningShown = false;
+
+                warnTimer   = setTimeout(showWarning, WARN_AT_MS);       // 13 min
+                expireTimer = setTimeout(doLogout,    SERVER_TIMEOUT_MS); // 15 min
+            }
+
+            // ─── Activity tracking ────────────────────────────────────────────
+            // Reset timers on real user activity, but throttle to once per minute
+            // to avoid hammering setTimeout.
+            let throttled = false;
+            function onActivity() {
+                if (throttled || isLoggingOut || warningShown) return;
+                throttled = true;
+                lastActivity = Date.now();
+                resetTimers();
+                setTimeout(() => { throttled = false; }, 60 * 1000);
+            }
+
+            ['mousemove', 'keydown', 'scroll', 'click', 'touchstart'].forEach(evt => {
+                document.addEventListener(evt, onActivity, { passive: true });
+            });
+
+            // ─── Passive server poll ──────────────────────────────────────────
+            // Uses /session-peek which does NOT reset the server session timer.
+            // This catches the case where the server killed the session (e.g.
+            // server restart, another tab logged out, admin invalidation).
+            function pollServer() {
+                if (isLoggingOut) return;
+                fetch('/session-peek', { credentials: 'include' })
+                    .then(res => {
+                        if (res.status === 401) doLogout();
+                    })
+                    .catch(() => {
+                        // Network error — don't log out immediately; might be transient
+                    });
+            }
+
+            // ─── Boot ─────────────────────────────────────────────────────────
+            resetTimers();
+            setInterval(pollServer, POLL_INTERVAL_MS);
+        })();
+    </script>
+        
+    <!-- 🌙 DARK MODE TOGGLE SCRIPT -->
+    <script>
+        (function () {
+            const body = document.body;
+            const toggle = document.getElementById('themeToggle');
+    
+            const savedTheme = localStorage.getItem('theme');
+            const isDark = savedTheme === 'dark';
+    
+            if (isDark) {
+                body.classList.add('dark-mode');
+            }
+    
+            if (toggle) {
+                toggle.innerHTML = isDark
+                    ? '<i class="fas fa-sun"></i>'
+                    : '<i class="fas fa-moon"></i>';
+    
+                toggle.addEventListener('click', () => {
+                    body.classList.toggle('dark-mode');
+                    const nowDark = body.classList.contains('dark-mode');
+    
+                    localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+    
+                    toggle.innerHTML = nowDark
+                        ? '<i class="fas fa-sun"></i>'
+                        : '<i class="fas fa-moon"></i>';
+                });
+            }
+        })();
+    </script>
+    
+</body>
+</html>

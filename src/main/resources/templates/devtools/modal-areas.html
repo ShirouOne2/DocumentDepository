@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Area Modal (Add/Edit) -->
+<div th:fragment="areaModal" id="areaModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="areaModalTitle"><i class="fas fa-map-marked-alt me-2"></i>Add Area</h3>
+            <span class="close" onclick="closeAreaModal()">&times;</span>
+        </div>
+        
+        <div class="modal-body">
+            <form id="areaForm" th:action="@{/devtools/areas/add}" method="post">
+                <input type="hidden" id="areaId" name="areaId">
+
+                <div class="mb-3">
+                    <label class="form-label">Area Name <span class="text-danger">*</span></label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="areaName" 
+                           name="name"
+                           placeholder="Enter area name"
+                           required>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" 
+                            class="btn btn-secondary" 
+                            onclick="closeAreaModal()">
+                        Cancel
+                    </button>
+                    <button type="button" 
+                            class="btn btn-primary" 
+                            onclick="submitAreaForm()">
+                        <i class="fas fa-save me-2"></i>Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

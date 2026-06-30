@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Classification Modal (Add/Edit) -->
+<div th:fragment="classificationModal" id="classificationModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="classificationModalTitle"><i class="fas fa-file-alt me-2"></i>Add Document Type</h3>
+            <span class="close" onclick="closeClassificationModal()">&times;</span>
+        </div>
+        
+        <div class="modal-body">
+            <form id="classificationForm" th:action="@{/devtools/classifications/add}" method="post">
+                <input type="hidden" id="classificationId" name="classificationId">
+
+                <div class="mb-3">
+                    <label class="form-label">Document Type <span class="text-danger">*</span></label>
+                    <input type="text" 
+                           class="form-control" 
+                           id="classificationName" 
+                           name="name"
+                           placeholder="Enter classification name"
+                           required>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" 
+                            class="btn btn-secondary" 
+                            onclick="closeClassificationModal()">
+                        Cancel
+                    </button>
+                    <button type="button" 
+                            class="btn btn-primary" 
+                            onclick="submitClassificationForm()">
+                        <i class="fas fa-save me-2"></i>Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

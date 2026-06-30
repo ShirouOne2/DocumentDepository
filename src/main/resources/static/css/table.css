@@ -1,0 +1,186 @@
+/* ========================================
+   TABLE ZEBRA STRIPING & STYLING
+   High specificity - Overrides everything
+   ======================================== */
+
+/* === BASE TABLE STYLING === */
+.table-responsive table.table,
+table.table.table-hover {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
+    font-family: var(--body-font) !important;
+}
+
+/* === ZEBRA STRIPING (Subtle Red Hint) === */
+.table-responsive table.table tbody tr:nth-child(odd),
+table.table.table-hover tbody tr:nth-child(odd) {
+    background-color: #FFFFFF !important;
+}
+
+.table-responsive table.table tbody tr:nth-child(even),
+table.table.table-hover tbody tr:nth-child(even) {
+    background-color: #FFF5F4 !important; /* Slightly more visible red tint */
+}
+
+/* === HOVER EFFECT === */
+.table-responsive table.table tbody tr:hover,
+table.table.table-hover tbody tr:hover {
+    background-color: #FCEBEA !important;
+    transition: background-color 0.15s ease !important;
+    cursor: pointer !important;
+}
+
+/* === TABLE HEADER === */
+.table-responsive table.table thead th,
+table.table.table-hover thead th {
+    background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%) !important;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 0.7rem !important;
+    letter-spacing: 0.08em !important;
+    padding: 1rem 0.75rem !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    border-bottom: 3px solid #b8261f !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 10 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Remove right border on last header cell */
+.table-responsive table.table thead th:last-child,
+table.table.table-hover thead th:last-child {
+    border-right: none !important;
+}
+
+/* === TABLE CELLS === */
+.table-responsive table.table tbody td,
+table.table.table-hover tbody td {
+    padding: 0.85rem 0.75rem !important;
+    vertical-align: middle !important;
+    font-size: var(--font-sm) !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    color: #333333 !important;
+    text-align: center !important;
+    line-height: 1.5 !important;
+}
+
+/* Left-align text columns (title, description) */
+.table-responsive table.table tbody td:nth-child(3),
+.table-responsive table.table tbody td:nth-child(4),
+table.table.table-hover tbody td:nth-child(3),
+table.table.table-hover tbody td:nth-child(4) {
+    text-align: left !important;
+}
+
+/* === RESPONSIVE TABLE WRAPPER === */
+.table-responsive {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0 !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* === CUSTOM SCROLLBAR (Horizontal) === */
+.table-responsive::-webkit-scrollbar {
+    height: 8px !important;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #F5F5F5 !important;
+    border-radius: 0 !important;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: var(--primary-accent) !important;
+    border-radius: 4px !important;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #cf2f27 !important;
+}
+
+/* === ACTION BUTTONS === */
+.table-responsive table.table .btn-sm,
+table.table.table-hover .btn-sm {
+    padding: 0.25rem 0.5rem !important;
+    font-size: var(--font-xs) !important;
+    border-radius: 0 !important;
+}
+
+/* === COLUMN STYLING === */
+
+/* First column (usually #) - Bold gray */
+.table-responsive table.table tbody td:first-child,
+table.table.table-hover tbody td:first-child {
+    font-weight: 600 !important;
+    color: var(--secondary-color) !important;
+}
+
+/* Title column (usually 3rd column) - Bold emphasis */
+.table-responsive table.table tbody td:nth-child(3),
+table.table.table-hover tbody td:nth-child(3) {
+    font-weight: 600 !important;
+    color: #212529 !important;
+}
+
+/* === SPECIAL CLASSES === */
+
+/* Filename styling */
+.table-responsive table.table .filename,
+table.table.table-hover .filename {
+    color: var(--secondary-color) !important;
+    font-size: var(--font-xs) !important;
+    font-family: 'Courier New', monospace !important;
+}
+
+/* Text truncation for long content */
+.table-responsive table.table .text-truncate,
+table.table.table-hover .text-truncate {
+    max-width: 220px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* === MOBILE OPTIMIZATION === */
+@media (max-width: 768px) {
+    .table-responsive table.table thead th,
+    table.table.table-hover thead th {
+        font-size: 0.65rem !important;
+        padding: 0.5rem 0.35rem !important;
+    }
+    
+    .table-responsive table.table tbody td,
+    table.table.table-hover tbody td {
+        font-size: var(--font-xs) !important;
+        padding: 0.5rem 0.35rem !important;
+    }
+    
+    .table-responsive {
+        border-left: none !important;
+        border-right: none !important;
+    }
+}
+
+/* === EMPTY STATE === */
+.table-responsive table.table tbody tr.empty-row td,
+table.table.table-hover tbody tr.empty-row td {
+    text-align: center !important;
+    padding: 2rem !important;
+    color: #999 !important;
+    background-color: #F8F9FA !important;
+    font-size: var(--font-sm) !important;
+}
+
+/* === TEXT COLORS === */
+.table-responsive table.table .text-muted,
+table.table.table-hover .text-muted {
+    color: var(--secondary-color) !important;
+    font-size: var(--font-xs) !important;
+}

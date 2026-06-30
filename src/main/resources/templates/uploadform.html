@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main-layout :: document('Upload New Document', ~{::content})}">
+
+<div th:fragment="content">
+    <style>
+        .form-container {
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            background-color: white;
+        }
+
+        .page-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+        }
+
+        .page-header h4 {
+            color: white;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .page-header i {
+            color: white;
+        }
+        
+        .page-body {
+            padding: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #E8392F;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #fcebea;
+        }
+
+        .btn-primary {
+            background-color: #E8392F;
+            border-color: #E8392F;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            padding: 0.45rem 1.4rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #cf2f27;
+            border-color: #cf2f27;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(232, 57, 47, 0.3);
+        }
+
+        .form-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid #dee2e6;
+            transition: border-color 0.2s ease;
+            font-size: 0.8rem;
+            padding: 0.35rem 0.5rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #E8392F;
+            box-shadow: 0 0 0 0.2rem rgba(232, 57, 47, 0.15);
+        }
+
+        .form-select:disabled,
+        .form-select option:disabled {
+            color: #adb5bd;
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        .readonly-field {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+            font-size: 0.75rem;
+        }
+
+        textarea.form-control {
+            min-height: 65px;
+        }
+
+        small.text-muted {
+            font-size: 0.65rem;
+        }
+
+        .viewer-group-hint {
+            font-size: 0.7rem;
+            color: #6b7280;
+            margin-top: 0.3rem;
+        }
+
+        .viewer-group-hint span {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        #customGroupContainer {
+            transition: all 0.3s ease;
+        }
+
+        .upload-box {
+            border: 2px dashed #f3b4ae;
+            background: #fff7f6;
+            border-radius: 10px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .upload-box:hover {
+            background: #fff1ef;
+            border-color: #e8392f;
+        }
+
+        .upload-box.dragover {
+            background: #ffeceb;
+            border-color: #e8392f;
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+            color: #e8392f;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-text {
+            font-size: 0.95rem;
+            color: #374151;
+        }
+
+        .upload-hint {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .file-preview {
+            margin-top: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            font-size: 0.875rem;
+        }
+
+        #tagButtons button:hover {
+            background-color: #E8392F !important;
+            border-color: #E8392F !important;
+            color: white !important;
+        }
+
+        .admin-target-section {
+            background: #fffbf0;
+            border: 1px solid #fde68a;
+            border-radius: 0.5rem;
+            padding: 1rem 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .admin-target-section .section-title {
+            color: #92400e;
+            border-bottom-color: #fde68a;
+        }
+
+        .admin-badge {
+            font-size: 0.65rem;
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            vertical-align: middle;
+            margin-left: 0.5rem;
+        }
+
+        /* ── Contract dates section ─────────────────────── */
+        .contract-dates-section {
+            background: #f0f7ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 0.5rem;
+            padding: 1rem 1.25rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .contract-dates-section .section-title {
+            color: #1e40af;
+            border-bottom-color: #bfdbfe;
+        }
+
+        .contract-badge {
+            font-size: 0.65rem;
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            font-weight: 700;
+            vertical-align: middle;
+            margin-left: 0.5rem;
+        }
+    </style>
+
+    <div class="form-container">
+        
+        <div class="page-header">
+            <h4><i class="fas fa-cloud-upload-alt me-2"></i>Upload New Document</h4>
+        </div>
+        
+        <div class="page-body">
+            <form id="uploadDocumentForm" th:action="@{/save}" th:object="${uploadForm}" method="post" enctype="multipart/form-data">
+                
+                <!-- DOCUMENT INFORMATION -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-file-alt me-2"></i>Document Information
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="classificationId" class="form-label">Document Classification *</label>
+                            <select class="form-select" id="classificationId" th:field="*{documentClassificationId}"
+                                    onchange="onClassificationChange()" required>
+                                <option value="">-- Select Document Type --</option>
+                                <option th:each="classification : ${classifications}" 
+                                        th:value="${classification.id}" 
+                                        th:text="${classification.name}">
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="title" class="form-label">Document Title *</label>
+                            <input type="text" class="form-control" id="title" th:field="*{title}" 
+                                   placeholder="Enter document title" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="dtsNumber" class="form-label">DTS No.
+                                <i class="fas fa-info-circle"
+                                   title="Document Tracking System number from the tracking portal"
+                                   style="color: #6c757d; font-size: 0.75rem;"></i>
+                            </label>
+                            <input type="text" class="form-control" id="dtsNumber" th:field="*{dtsNumber}"
+                                   placeholder="e.g. DTS-2024-001 (optional)">
+                            <small class="text-muted">Leave blank if not applicable.</small>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="dateCreated" class="form-label">Document Date *</label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="dateCreated"
+                                   th:field="*{dateCreated}"
+                                   required>
+                            <small class="text-muted">The original date this document was created</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="description" class="form-label">Subject</label>
+                            <textarea class="form-control" id="description" th:field="*{description}" rows="3" 
+                                      placeholder="Provide a brief description of the document..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- CONTRACT DATES — shown only when a Contract classification is selected -->
+                    <div id="contractDatesSection" class="contract-dates-section" style="display:none;">
+                        <div class="section-title">
+                            <i class="fas fa-file-contract me-2"></i>Contract Period
+                            <span class="contract-badge"><i class="fas fa-handshake me-1"></i>Contract</span>
+                        </div>
+                        <p class="text-muted" style="font-size:0.75rem; margin-bottom:1rem;">
+                            Specify the effectivity period of this contract document.
+                        </p>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="contractStartDate" class="form-label">Contract Start Date *</label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="contractStartDate"
+                                       th:field="*{contractStartDate}">
+                                <small class="text-muted">Date the contract takes effect.</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="contractEndDate" class="form-label">Contract End Date *</label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="contractEndDate"
+                                       th:field="*{contractEndDate}">
+                                <small class="text-muted">Date the contract expires.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAGS -->
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="tags" class="form-label">
+                            Remarks / Tags / Other Description
+                            <i class="fas fa-info-circle" 
+                               title="Add tags separated by commas (e.g., budget, annual, 2024)"
+                               style="color: #6c757d; font-size: 0.75rem;"></i>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="tags" 
+                               th:field="*{tags}" 
+                               placeholder="e.g., budget, annual, 2024, finance"
+                               autocomplete="off">
+                        <small class="text-muted">
+                            Separate tags with commas. Max 10 tags. Tags help with searching documents.
+                        </small>
+                        
+                        <div id="tagSuggestions" style="display: none; margin-top: 0.5rem;">
+                            <small class="text-muted d-block mb-2">
+                                <i class="fas fa-lightbulb"></i> Popular tags:
+                            </small>
+                            <div id="tagButtons" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FILE UPLOAD -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-upload me-2"></i>File Upload
+                    </div>
+
+                    <input type="file"
+                           id="file"
+                           name="file"
+                           accept=".pdf,.doc,.docx,.xlsx,.xls,.txt,.jpg,.png"
+                           required
+                           hidden>
+                
+                    <div id="uploadBox" class="upload-box">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <div class="upload-text">
+                            <strong>Click to browse</strong> or drag file here
+                        </div>
+                        <div class="upload-hint">
+                            PDF, Word, Excel, Text, Images (Max 100MB)
+                        </div>
+                    </div>
+                
+                    <div id="filePreview" class="file-preview d-none">
+                        <i class="fas fa-file-alt me-2"></i>
+                        <span id="fileName"></span>
+                        <button type="button" id="clearFile" class="btn btn-sm btn-link text-danger ms-auto">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- DOCUMENT METADATA -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-info-circle me-2"></i>Document Metadata
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Upload Date</label>
+                            <input type="text"
+                                   class="form-control readonly-field"
+                                   th:value="${#temporals.format(systemUploadDate, 'yyyy-MM-dd HH:mm')}"
+                                   readonly>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="uploadedBy" class="form-label">Uploaded By</label>
+                            <input type="text" class="form-control readonly-field" id="uploadedBy" 
+                                   th:value="${currentUser != null ? currentUser.username : 'Unknown'}" readonly>
+                        </div>
+                    </div>
+
+                    <!-- VIEWER GROUP DROPDOWN -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="intendedViewerGroup" class="form-label">
+                                Document Intended Viewer Group *
+                            </label>
+
+                            <!-- For non-admins: show their own org location as context -->
+                            <div th:if="${!isAdmin}" class="viewer-group-hint mb-2">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                <span th:text="${currentUser.office?.area?.name ?: 'N/A'}">N/A</span>
+                                &nbsp;/&nbsp;
+                                <span th:text="${currentUser.office?.officeName ?: 'N/A'}">N/A</span>
+                                <span th:if="${currentUser.department != null}">
+                                    &nbsp;/&nbsp;
+                                    <span th:text="${currentUser.department.name}">N/A</span>
+                                </span>
+                                <span th:if="${currentUser.department == null}"
+                                      style="color: #9ca3af; font-size: 0.7rem;"
+                                      class="ms-1">
+                                    <i class="fas fa-exclamation-triangle"></i> No department assigned
+                                </span>
+                            </div>
+
+                            <select class="form-select"
+                                    id="intendedViewerGroup"
+                                    th:field="*{intendedViewerGroup}"
+                                    onchange="onViewerGroupChange()"
+                                    required>
+                                <option value="">-- Select who can view this document --</option>
+                                <option th:each="group : ${viewerGroups}"
+                                        th:if="${userHasDepartment or isAdmin or group.id != 4}"
+                                        th:value="${group.id}"
+                                        th:text="${group.name}">
+                                </option>
+                            </select>
+
+                            <div id="viewerGroupHint" class="viewer-group-hint mt-1" style="display:none;"></div>
+                            <small th:if="${!userHasDepartment and !isAdmin}" style="color: #9ca3af;">
+                                <i class="fas fa-info-circle"></i>
+                                "Department" sharing is not available — you are not assigned to a department.
+                            </small>
+                        </div>
+
+                        <!-- Custom group selector — admins only, shown only when Custom is selected -->
+                        <div th:if="${isAdmin}" class="col-md-6 mb-3" id="customGroupContainer" style="display: none;">
+                            <label for="customViewerGroupId" class="form-label">
+                                Select Custom Group *
+                                <i class="fas fa-info-circle" 
+                                   title="Choose which custom group can view this document"
+                                   style="color: #6c757d; font-size: 0.75rem;"></i>
+                            </label>
+                            <select class="form-select"
+                                    id="customViewerGroupId"
+                                    th:field="*{customViewerGroupId}">
+                                <option value="">-- Select Custom Group --</option>
+                                <option th:each="customGroup : ${customViewerGroups}"
+                                        th:value="${customGroup.groupId}"
+                                        th:text="${customGroup.groupName + ' (' + customGroup.memberCount + ' members)'}">
+                                </option>
+                            </select>
+                            <small class="text-muted">
+                                Only members of the selected group will see this document.
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- ADMIN-ONLY: Target Org Section -->
+                    <div th:if="${isAdmin}" id="adminTargetSection" class="admin-target-section mt-3" style="display:none;">
+                        <div class="section-title">
+                            <i class="fas fa-crosshairs me-2"></i>
+                            Target Audience
+                            <span class="admin-badge"><i class="fas fa-crown me-1"></i>Admin Only</span>
+                        </div>
+                        <p class="text-muted" style="font-size:0.75rem; margin-bottom:1rem;">
+                            Choose which office or department this document belongs to.
+                            Visibility rules will be applied against these values instead of your own profile.
+                        </p>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="targetOfficeId" class="form-label">
+                                    Target Office *
+                                    <i class="fas fa-info-circle"
+                                       title="Office this document belongs to. Target Area is derived automatically."
+                                       style="color: #6c757d; font-size: 0.75rem;"></i>
+                                </label>
+                                <select class="form-select"
+                                        id="targetOfficeId"
+                                        th:field="*{targetOfficeId}"
+                                        onchange="onTargetOfficeChange()">
+                                    <option value="">-- Select an office --</option>
+                                    <option th:each="office : ${offices}"
+                                            th:value="${office.officeId}"
+                                            th:text="${office.officeName + ' (' + office.area.name + ')'}">
+                                    </option>
+                                </select>
+                                <small class="text-muted">Area is derived automatically from the selected office.</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3" id="targetDeptWrapper" style="display:none;">
+                                <label for="targetDepartmentId" class="form-label">
+                                    Target Department
+                                    <i class="fas fa-info-circle"
+                                       title="Required only when Viewer Group = Department"
+                                       style="color: #6c757d; font-size: 0.75rem;"></i>
+                                </label>
+                                <select class="form-select"
+                                        id="targetDepartmentId"
+                                        th:field="*{targetDepartmentId}"
+                                        onchange="onViewerGroupChange()">
+                                    <option value="">-- Entire office (no specific dept) --</option>
+                                </select>
+                                <small class="text-muted">
+                                    Leave blank to apply to all departments in the target office.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-cloud-upload-alt me-2"></i>Upload Document
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const userHasDepartment = /*[[${userHasDepartment}]]*/ true;
+        const userArea     = /*[[${currentUser.office?.area?.name ?: 'N/A'}]]*/ 'N/A';
+        const userOffice   = /*[[${currentUser.office?.officeName ?: 'N/A'}]]*/ 'N/A';
+        const userDept     = /*[[${currentUser.department?.name ?: ''}]]*/ '';
+        const isAdmin      = /*[[${isAdmin}]]*/ false;
+
+        const allDepartments = {};
+        /*[# th:if="${isAdmin}"]*/
+            /*[# th:each="dept : ${departments}"]*/
+            (function() {
+                const offId = /*[[${dept.office?.officeId}]]*/ null;
+                if (offId == null) return;
+                if (!allDepartments[offId]) allDepartments[offId] = [];
+                allDepartments[offId].push({
+                    id   : /*[[${dept.id}]]*/ 0,
+                    name : /*[[${dept.name}]]*/ ''
+                });
+            })();
+            /*[/]*/
+        /*[/]*/
+        /*]]>*/
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const today = new Date();
+            const yyyy  = today.getFullYear();
+            const mm    = String(today.getMonth() + 1).padStart(2, '0');
+            const dd    = String(today.getDate()).padStart(2, '0');
+            const dateInput = document.getElementById('dateCreated');
+            if (dateInput && !dateInput.value) {
+                dateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+
+            onViewerGroupChange();
+
+            fetch('/api/tags/autocomplete')
+                .then(r => r.json())
+                .then(tags => {
+                    if (tags.length > 0) {
+                        document.getElementById('tagSuggestions').style.display = 'block';
+                        document.getElementById('tagButtons').innerHTML = tags.map(tag =>
+                            `<button type="button"
+                                     class="btn btn-sm btn-outline-secondary"
+                                     onclick="addTagToInput('${tag}')"
+                                     style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                ${tag}
+                            </button>`
+                        ).join('');
+                    }
+                })
+                .catch(err => console.error('Error loading tags:', err));
+
+            const form = document.getElementById('uploadDocumentForm');
+            if (form) {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    const fileInput = document.getElementById('file');
+                    const file = fileInput.files[0];
+                    const MAX_SIZE = 100 * 1024 * 1024;
+
+                    if (file && file.size > MAX_SIZE) {
+                        Swal.fire({ icon: 'error', title: 'Upload Failed',
+                            text: 'File size exceeds the 100MB limit.', confirmButtonColor: '#E8392F' });
+                        return;
+                    }
+
+                    const vgSel = document.getElementById('intendedViewerGroup');
+
+                    // Non-admin without dept cannot pick Department group
+                    if (!userHasDepartment && !isAdmin && vgSel?.value === '4') {
+                        Swal.fire({ icon: 'error', title: 'Not Allowed',
+                            text: 'You are not assigned to a department and cannot select this viewer group.',
+                            confirmButtonColor: '#E8392F' });
+                        return;
+                    }
+
+                    // Admin picking Area/Office/Dept must select a target office
+                    const needsOffice = isAdmin && ['2','4'].includes(vgSel?.value);
+                    if (needsOffice && !document.getElementById('targetOfficeId')?.value) {
+                        Swal.fire({ icon: 'warning', title: 'Target Office Required',
+                            text: 'Please select a Target Office for the chosen viewer group.',
+                            confirmButtonColor: '#E8392F' });
+                        return;
+                    }
+
+                    // Contract date validation
+                    const contractSection = document.getElementById('contractDatesSection');
+                    if (contractSection && contractSection.style.display !== 'none') {
+                        const startDate = document.getElementById('contractStartDate').value;
+                        const endDate   = document.getElementById('contractEndDate').value;
+                        if (!startDate || !endDate) {
+                            Swal.fire({ icon: 'warning', title: 'Contract Dates Required',
+                                text: 'Please fill in both the Contract Start Date and Contract End Date.',
+                                confirmButtonColor: '#E8392F' });
+                            return;
+                        }
+                        if (endDate < startDate) {
+                            Swal.fire({ icon: 'warning', title: 'Invalid Contract Period',
+                                text: 'Contract End Date cannot be earlier than the Start Date.',
+                                confirmButtonColor: '#E8392F' });
+                            return;
+                        }
+                    }
+
+                    Swal.fire({
+                        title: 'Confirm Upload',
+                        text: 'Are you sure you want to upload this document?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#E8392F',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, upload it',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (!result.isConfirmed) return;
+
+                        const formData  = new FormData(form);
+                        const submitBtn = form.querySelector('button[type="submit"]');
+
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
+
+                        fetch(form.action, { method: 'POST', body: formData })
+                            .then(response => {
+                                if (!response.ok) {
+                                    return response.json()
+                                        .catch(() => ({ message: 'Server error' }))
+                                        .then(data => { throw new Error(data.message); });
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data.status === 'error') throw new Error(data.message);
+                                Swal.fire({
+                                    icon: 'success', title: 'Upload Successful!',
+                                    text: data.message || 'Your document has been uploaded successfully.',
+                                    confirmButtonColor: '#E8392F'
+                                }).then(() => { window.location.href = data.redirectUrl || '/files'; });
+                            })
+                            .catch(error => {
+                                Swal.fire({ icon: 'error', title: 'Upload Failed!',
+                                    text: error.message || 'An error occurred while uploading.',
+                                    confirmButtonColor: '#E8392F' });
+                            })
+                            .finally(() => {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt me-2"></i>Upload Document';
+                            });
+                    });
+                });
+            }
+        });
+
+        // ── Show/hide contract dates based on classification name ──────────
+        function onClassificationChange() {
+            const sel = document.getElementById('classificationId');
+            const selectedText = sel.options[sel.selectedIndex]?.text || '';
+            const isContract = selectedText.toLowerCase().includes('contract');
+            const section = document.getElementById('contractDatesSection');
+            if (!section) return;
+
+            section.style.display = isContract ? '' : 'none';
+
+            // Toggle required attribute so the form won't block non-contract uploads
+            const startInput = document.getElementById('contractStartDate');
+            const endInput   = document.getElementById('contractEndDate');
+            if (isContract) {
+                startInput.setAttribute('required', 'required');
+                endInput.setAttribute('required', 'required');
+            } else {
+                startInput.removeAttribute('required');
+                endInput.removeAttribute('required');
+                startInput.value = '';
+                endInput.value   = '';
+            }
+        }
+
+        function onViewerGroupChange() {
+            const sel      = document.getElementById('intendedViewerGroup');
+            const hint     = document.getElementById('viewerGroupHint');
+            const cgCont   = document.getElementById('customGroupContainer');
+            const cgSelect = document.getElementById('customViewerGroupId');
+            const adminTargetSection = document.getElementById('adminTargetSection');
+            const deptWrapper = document.getElementById('targetDeptWrapper');
+
+            if (!sel) return;
+
+            const val = sel.value;
+
+            const isArea     = val === '2';
+            const isOffice   = val === '3';
+            const isAll      = val === '1';
+            const isDept     = val === '4';
+            const isCustom   = val === '5';
+            const isOrgGroup = isArea || isOffice || isDept;
+
+            if (isAdmin && adminTargetSection) {
+                adminTargetSection.style.display = isOrgGroup ? 'block' : 'none';
+            }
+
+            if (deptWrapper) {
+                deptWrapper.style.display = isDept ? 'block' : 'none';
+            }
+
+            if (isAdmin && cgCont) {
+                cgCont.style.display = isCustom ? 'block' : 'none';
+                if (cgSelect) {
+                    isCustom
+                        ? cgSelect.setAttribute('required', 'required')
+                        : cgSelect.removeAttribute('required');
+                    if (!isCustom) cgSelect.value = '';
+                }
+            }
+
+            const targetOfficeSel  = document.getElementById('targetOfficeId');
+            const targetOfficeText = targetOfficeSel?.value
+                ? targetOfficeSel.options[targetOfficeSel.selectedIndex]?.text
+                : userOffice;
+            const targetDeptSel  = document.getElementById('targetDepartmentId');
+            const targetDeptText = targetDeptSel?.value
+                ? targetDeptSel.options[targetDeptSel.selectedIndex]?.text
+                : userDept;
+
+            let hintHtml = '';
+            if (isArea) {
+                hintHtml = `<i class="fas fa-map-marker-alt me-1"></i>Visible to all staff in area of: <span>${targetOfficeText}</span>`;
+            } else if (isOffice) {
+                hintHtml = `<i class="fas fa-building me-1"></i>Visible to all staff in: <span>${targetOfficeText}</span>`;
+            } else if (isDept) {
+                const deptLabel = targetDeptText || 'all departments';
+                hintHtml = `<i class="fas fa-sitemap me-1"></i>Visible to <span>${deptLabel}</span> in <span>${targetOfficeText}</span>`;
+            } else if (isAll) {
+                hintHtml = `<i class="fas fa-globe me-1"></i>Visible to <span>everyone</span>`;
+            } else if (isCustom) {
+                hintHtml = `<i class="fas fa-users me-1"></i>Visible to members of the selected group`;
+            }
+
+            if (hint) {
+                if (hintHtml) {
+                    hint.innerHTML = hintHtml;
+                    hint.style.display = '';
+                } else {
+                    hint.style.display = 'none';
+                }
+            }
+        }
+
+        function onTargetOfficeChange() {
+            const sel      = document.getElementById('targetOfficeId');
+            const officeId = sel ? sel.value : '';
+            const deptSel  = document.getElementById('targetDepartmentId');
+
+            if (!deptSel) return;
+
+            deptSel.innerHTML = '<option value="">-- Entire office (no specific dept) --</option>';
+            if (officeId && allDepartments[officeId]) {
+                allDepartments[officeId].forEach(function(dept) {
+                    const opt = document.createElement('option');
+                    opt.value = dept.id;
+                    opt.textContent = dept.name;
+                    deptSel.appendChild(opt);
+                });
+            }
+
+            onViewerGroupChange();
+        }
+
+        function addTagToInput(tag) {
+            const input = document.getElementById('tags');
+            const currentTags = input.value.split(',').map(t => t.trim()).filter(t => t.length > 0);
+            if (!currentTags.includes(tag)) {
+                currentTags.push(tag);
+                input.value = currentTags.join(', ');
+            }
+            input.focus();
+        }
+
+        const fileInput  = document.getElementById("file");
+        const uploadBox  = document.getElementById("uploadBox");
+        const preview    = document.getElementById("filePreview");
+        const fileNameEl = document.getElementById("fileName");
+        const clearBtn   = document.getElementById("clearFile");
+
+        uploadBox.addEventListener("click",     () => fileInput.click());
+        uploadBox.addEventListener("dragover",  e => { e.preventDefault(); uploadBox.classList.add("dragover"); });
+        uploadBox.addEventListener("dragleave", () => uploadBox.classList.remove("dragover"));
+        uploadBox.addEventListener("drop", e => {
+            e.preventDefault();
+            uploadBox.classList.remove("dragover");
+            fileInput.files = e.dataTransfer.files;
+            updatePreview();
+        });
+        fileInput.addEventListener("change", updatePreview);
+        clearBtn.addEventListener("click", () => {
+            fileInput.value = "";
+            preview.classList.add("d-none");
+            uploadBox.classList.remove("d-none");
+        });
+
+        function updatePreview() {
+            if (fileInput.files.length) {
+                fileNameEl.textContent = fileInput.files[0].name;
+                preview.classList.remove("d-none");
+                uploadBox.classList.add("d-none");
+            }
+        }
+    </script>
+</div>
+
+</html>

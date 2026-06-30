@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main-layout :: document('File Integrity Check', ~{::content})}">
+
+<div th:fragment="content">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        .integrity-container {
+            border: 1px solid #e5e7eb;
+            background-color: #fff;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+        }
+
+        .integrity-header {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .integrity-header h4,
+        .integrity-header i {
+            margin: 0;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .integrity-body {
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value.success { color: #22c55e; }
+        .stat-value.danger { color: #dc3545; }
+        .stat-value.info { color: #3b82f6; }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .progress-bar-wrapper {
+            background: #f3f4f6;
+            border-radius: 8px;
+            height: 24px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+            transition: width 0.5s ease;
+        }
+
+        .progress-bar-fill.low {
+            background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .progress-bar-fill.medium {
+            background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #495057;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #E8392F;
+        }
+
+        .broken-file-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: #fff5f5;
+            border-left: 4px solid #dc3545;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .broken-file-icon {
+            width: 40px;
+            height: 40px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .broken-file-details {
+            flex: 1;
+        }
+
+        .broken-file-name {
+            font-weight: 600;
+            color: #212529;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .broken-file-meta {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+
+        .broken-file-actions {
+            margin-left: auto;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #22c55e;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffe69c;
+            color: #856404;
+        }
+
+        /* Search box styling */
+        .search-box {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 0.5rem 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        .search-box .btn-search {
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            font-weight: 600;
+            background: #E8392F;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .search-box .btn-search:hover {
+            background: #cf2f27;
+        }
+
+        .bulk-actions {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+    </style>
+
+    <div class="integrity-container">
+        <div class="integrity-header">
+            <h4><i class="fas fa-shield-alt me-2"></i>File Integrity Check</h4>
+        </div>
+
+        <div class="integrity-body">
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value info" th:text="${report.totalDocuments}">0</div>
+                    <div class="stat-label">Total Documents</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-value success" th:text="${report.validFiles}">0</div>
+                    <div class="stat-label">Valid Files</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-value danger" th:text="${report.brokenFiles}">0</div>
+                    <div class="stat-label">Broken Links</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-value info" th:text="${report.totalSizeFormatted}">0 MB</div>
+                    <div class="stat-label">Total Storage Used</div>
+                </div>
+            </div>
+
+            <!-- Integrity Progress Bar -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span style="font-size: 0.875rem; font-weight: 600;">File Integrity</span>
+                    <span style="font-size: 0.875rem; color: #6c757d;" 
+                          th:text="${#numbers.formatDecimal(report.integrityPercentage, 1, 2)} + '%'">
+                        0%
+                    </span>
+                </div>
+                <div class="progress-bar-wrapper">
+                    <div class="progress-bar-fill"
+                         th:classappend="${report.integrityPercentage < 50} ? 'low' : 
+                                        (${report.integrityPercentage < 80} ? 'medium' : '')"
+                         th:style="'width: ' + ${report.integrityPercentage} + '%'"
+                         th:text="${#numbers.formatDecimal(report.integrityPercentage, 1, 2)} + '%'">
+                        0%
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warning Alert -->
+            <div th:if="${report.brokenFiles > 0}" class="alert alert-warning mb-4">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Warning:</strong> 
+                <span th:text="${report.brokenFiles}">0</span> file(s) are missing from the storage directory. 
+                These documents exist in the database but their physical files cannot be found.
+            </div>
+
+            <!-- Search Box -->
+            <div th:if="${report.brokenFiles > 0}" class="search-box">
+                <form th:action="@{/admin/file-integrity}" method="get" style="display: flex; flex: 1; gap: 0.5rem;">
+                    <input type="text" 
+                           name="search" 
+                           th:value="${search}"
+                           placeholder="Search by filename, document ID, or uploader..."
+                           class="form-control">
+                    <button type="submit" class="btn-search">
+                        <i class="fas fa-search me-1"></i>Search
+                    </button>
+                </form>
+                <a th:href="@{/admin/file-integrity}" 
+                   class="btn btn-secondary" 
+                   style="padding: 0.5rem 1.5rem; text-decoration: none; white-space: nowrap;">
+                    <i class="fas fa-times me-1"></i>Clear
+                </a>
+            </div>
+
+            <!-- Broken Files List -->
+            <div class="section-title">
+                <i class="fas fa-exclamation-circle me-2"></i>Broken File Links
+                (<span th:text="${#lists.size(brokenFiles)}">0</span>)
+            </div>
+
+            <!-- Bulk Actions -->
+            <div th:if="${!#lists.isEmpty(brokenFiles)}" class="bulk-actions">
+                <button onclick="archiveAllBrokenFiles()" class="btn btn-danger btn-sm">
+                    <i class="fas fa-archive me-1"></i>Archive All Broken Files
+                </button>
+            </div>
+
+            <div th:if="${#lists.isEmpty(brokenFiles)}" class="empty-state">
+                <i class="bx bx-check-circle"></i>
+                <p style="font-weight: 600; font-size: 1.1rem;">All Files Intact!</p>
+                <p style="font-size: 0.875rem;">No broken file links detected. All database records have corresponding physical files.</p>
+            </div>
+
+            <div th:if="${!#lists.isEmpty(brokenFiles)}">
+                <div class="broken-file-item" th:each="file : ${brokenFiles}">
+                    <div class="broken-file-icon">
+                        <i class="fas fa-unlink"></i>
+                    </div>
+                    <div class="broken-file-details">
+                        <div class="broken-file-name" th:text="${file.filename}">filename.pdf</div>
+                        <div class="broken-file-meta">
+                            <i class="fas fa-user me-1"></i>
+                            Uploaded by: <span th:text="${file.uploadedBy}">User</span>
+                            <span class="mx-2">•</span>
+                            <i class="fas fa-hashtag me-1"></i>
+                            Document ID: <span th:text="${file.documentId}">0</span>
+                        </div>
+                    </div>
+                    <div class="broken-file-actions">
+                        <button class="btn btn-sm btn-warning" 
+                                th:onclick="'archiveSingleFile(' + ${file.documentId} + ')'"
+                                title="Archive this document">
+                            <i class="fas fa-archive"></i> Archive
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div th:replace="~{fragments/pagination :: pagination(${currentPage}, ${totalPages}, '/admin/file-integrity')}"></div>
+            </div>
+
+            <!-- Info Alert -->
+            <div class="alert alert-info mt-4 mb-0">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Note:</strong> This scan checks if physical files exist in the upload directory for all database records.
+                Archiving will mark the document as archived in the database, removing it from active document lists.
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        
+        /**
+         * Archive a single broken file
+         */
+        function archiveSingleFile(documentId) {
+            Swal.fire({
+                title: 'Archive this document?',
+                html: 
+                    '<p>This will mark the document as archived in the database.</p>' +
+                    '<p class="text-muted" style="font-size: 0.85rem;">The physical file is already missing, so only the database record will be updated.</p>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff9800',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-archive me-2"></i>Yes, archive it',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'Archiving...',
+                        text: 'Please wait',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    fetch('/admin/file-integrity/archive/' + documentId, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Archived!',
+                                text: data.message,
+                                confirmButtonColor: '#E8392F',
+                                timer: 2000
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message || 'Failed to archive document',
+                            confirmButtonColor: '#E8392F'
+                        });
+                    });
+                }
+            });
+        }
+
+        /**
+         * Archive all broken files
+         */
+        function archiveAllBrokenFiles() {
+            var totalBroken = /*[[${report.brokenFiles}]]*/ 0;
+            
+            Swal.fire({
+                title: 'Archive all broken files?',
+                html: 
+                    '<p>This will archive <strong>' + totalBroken + ' broken file(s)</strong> from the database.</p>' +
+                    '<p class="text-danger" style="font-size: 0.9rem; margin-top: 1rem;">' +
+                    '<i class="fas fa-exclamation-triangle me-1"></i>' +
+                    'This action cannot be undone easily.' +
+                    '</p>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-archive me-2"></i>Yes, archive all',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'Archiving all broken files...',
+                        text: 'This may take a moment',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    fetch('/admin/file-integrity/archive-all', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                html: 
+                                    '<p>' + data.message + '</p>' +
+                                    '<p class="text-muted" style="font-size: 0.85rem;">' +
+                                    data.archivedCount + ' document(s) have been archived.' +
+                                    '</p>',
+                                confirmButtonColor: '#E8392F'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message || 'Failed to archive documents',
+                            confirmButtonColor: '#E8392F'
+                        });
+                    });
+                }
+            });
+        }
+        
+        /*]]>*/
+    </script>
+
+</div>
+</html>

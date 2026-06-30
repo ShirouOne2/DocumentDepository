@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- Reusable Pagination Component -->
+<div th:fragment="pagination(currentPage, totalPages, baseUrl)">
+    
+    <style>
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding: 1rem 0;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            gap: 0.25rem;
+        }
+
+        .page-item {
+            display: inline-block;
+        }
+
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #495057;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .page-link:hover {
+            background-color: #fcebea;
+            border-color: #E8392F;
+            color: #E8392F;
+        }
+
+        .page-item.active .page-link {
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+            border-color: #E8392F;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .page-item.disabled .page-link {
+            color: #adb5bd;
+            pointer-events: none;
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        @media (max-width: 768px) {
+            .pagination-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+
+    <div class="pagination-container" th:if="${totalPages > 0}">
+        <div class="pagination-info">
+            Showing page <strong th:text="${currentPage + 1}">1</strong> of <strong th:text="${totalPages}">1</strong>
+            <span th:if="${totalItems != null}">
+                (<span th:text="${totalItems}">0</span> total items)
+            </span>
+        </div>
+
+        <ul class="pagination">
+            <!-- First Page -->
+            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                <a class="page-link" th:href="@{${baseUrl}(page=0)}" aria-label="First">
+                    <i class="bx bx-chevrons-left"></i>
+                </a>
+            </li>
+
+            <!-- Previous Page -->
+            <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                <a class="page-link" th:href="@{${baseUrl}(page=${currentPage - 1})}" aria-label="Previous">
+                    <i class="bx bx-chevron-left"></i>
+                </a>
+            </li>
+
+            <!-- Page Numbers (showing max 5 pages) -->
+            <th:block th:each="i : ${#numbers.sequence(
+                T(java.lang.Math).max(0, currentPage - 2), 
+                T(java.lang.Math).min(totalPages - 1, currentPage + 2)
+            )}">
+                <li class="page-item" th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link" th:href="@{${baseUrl}(page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+            </th:block>
+
+            <!-- Next Page -->
+            <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                <a class="page-link" th:href="@{${baseUrl}(page=${currentPage + 1})}" aria-label="Next">
+                    <i class="bx bx-chevron-right"></i>
+                </a>
+            </li>
+
+            <!-- Last Page -->
+            <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                <a class="page-link" th:href="@{${baseUrl}(page=${totalPages - 1})}" aria-label="Last">
+                    <i class="bx bx-chevrons-right"></i>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+</div>
+
+</html>

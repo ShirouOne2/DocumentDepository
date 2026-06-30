@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main-layout :: document('Knowledge Base', ~{::content})}">
+
+<div th:fragment="content">
+
+    <!-- modal.css required: KB article modal uses the same .modal class as document-modal-fragment -->
+    <link rel="stylesheet" th:href="@{/css/modal.css}">
+
+    <style>
+        /* ── Page shell ─────────────────────────────────────── */
+        .form-container {
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            background-color: white;
+        }
+
+        .page-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+            background: linear-gradient(135deg, #E8392F 0%, #cf2f27 100%);
+        }
+
+        .page-header h4 {
+            color: white;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .page-header .page-subtitle {
+            color: rgba(255,255,255,0.8);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .page-body {
+            padding: 2rem;
+        }
+
+        /* ── Section title (matches rest of app) ────────────── */
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #E8392F;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #fcebea;
+        }
+
+        /* ── Category tabs ───────────────────────────────────── */
+        .kb-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.75rem;
+            flex-wrap: wrap;
+        }
+
+        .kb-tab {
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1.5px solid #dee2e6;
+            background: white;
+            color: #495057;
+            transition: all 0.2s ease;
+        }
+
+        .kb-tab:hover {
+            border-color: #E8392F;
+            color: #E8392F;
+        }
+
+        .kb-tab.active {
+            background: #E8392F;
+            border-color: #E8392F;
+            color: white;
+        }
+
+        /* ── Card grid ───────────────────────────────────────── */
+        .kb-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .kb-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.65rem;
+            overflow: hidden;
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+            cursor: pointer;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kb-card:hover {
+            box-shadow: 0 6px 20px rgba(232,57,47,0.12);
+            transform: translateY(-2px);
+        }
+
+        .kb-card-stripe {
+            height: 4px;
+        }
+
+        .kb-card-body {
+            padding: 1.1rem 1.25rem;
+            flex: 1;
+        }
+
+        .kb-card-category {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.4rem;
+        }
+
+        .kb-card-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.4rem;
+            line-height: 1.35;
+        }
+
+        .kb-card-excerpt {
+            font-size: 0.78rem;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .kb-card-footer {
+            padding: 0.6rem 1.25rem;
+            background: #f9fafb;
+            border-top: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #9ca3af;
+        }
+
+        .kb-card-footer .read-link {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #E8392F;
+            text-decoration: none;
+        }
+
+        .kb-card-footer .read-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Category colour palette */
+        .cat-guide   { color: #1d4ed8; }
+        .cat-update  { color: #059669; }
+        .cat-policy  { color: #7c3aed; }
+        .cat-tip     { color: #d97706; }
+
+        .stripe-guide  { background: #1d4ed8; }
+        .stripe-update { background: #059669; }
+        .stripe-policy { background: #7c3aed; }
+        .stripe-tip    { background: #d97706; }
+
+        /* ── "New" badge ─────────────────────────────────────── */
+        .badge-new {
+            font-size: 0.6rem;
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            padding: 0.1rem 0.45rem;
+            border-radius: 20px;
+            font-weight: 700;
+            margin-left: 0.4rem;
+            vertical-align: middle;
+        }
+
+        /* ── Modal body content styles ───────────────────────── */
+        #kbModalBody h5 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 1.25rem 0 0.5rem;
+        }
+
+        #kbModalBody ul {
+            padding-left: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        #kbModalBody ul li {
+            margin-bottom: 0.3rem;
+        }
+
+        #kbModalBody ol {
+            padding-left: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        #kbModalBody ol li {
+            margin-bottom: 0.3rem;
+        }
+
+        #kbModalBody .tip-box {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+        }
+
+        #kbModalBody code {
+            background: #f3f4f6;
+            padding: 0.1rem 0.35rem;
+            border-radius: 0.25rem;
+            font-size: 0.82rem;
+            color: #374151;
+        }
+
+        /* ── Empty state ─────────────────────────────────────── */
+        .kb-empty {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #9ca3af;
+        }
+
+        .kb-empty i {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+    </style>
+
+    <div class="form-container">
+
+        <div class="page-header">
+            <h4><i class="fas fa-book-open me-2"></i>Knowledge Base</h4>
+            <div class="page-subtitle">Guides, system updates, and tips for using the Document Repository</div>
+        </div>
+
+        <div class="page-body">
+
+            <!-- ── Category filter tabs ─────────────────────── -->
+            <div class="kb-tabs">
+                <button class="kb-tab active" data-filter="all">
+                    <i class="fas fa-th-large me-1"></i> All
+                </button>
+                <button class="kb-tab" data-filter="guide">
+                    <i class="fas fa-book me-1"></i> Guides
+                </button>
+                <button class="kb-tab" data-filter="update">
+                    <i class="fas fa-bell me-1"></i> System Updates
+                </button>
+                <button class="kb-tab" data-filter="policy">
+                    <i class="fas fa-shield-alt me-1"></i> Policies
+                </button>
+                <button class="kb-tab" data-filter="tip">
+                    <i class="fas fa-lightbulb me-1"></i> Tips & Tricks
+                </button>
+            </div>
+
+            <!-- ── Articles grid ────────────────────────────── -->
+            <div class="kb-grid" id="kbGrid">
+
+                <!-- GUIDE: Uploading Documents -->
+                <div class="kb-card" data-category="guide"
+                     onclick="openArticle('guide-upload')">
+                    <div class="kb-card-stripe stripe-guide"></div>
+                    <div class="kb-card-body">
+                        <div class="kb-card-category cat-guide">
+                            <i class="fas fa-book me-1"></i> Guide
+                        </div>
+                        <div class="kb-card-title">
+                            How to Upload a Document
+                        </div>
+                        <div class="kb-card-excerpt">
+                            Step-by-step instructions for uploading files — from selecting the document classification to setting the correct viewer group and target audience.
+                        </div>
+                    </div>
+                    <div class="kb-card-footer">
+                        <span><i class="fas fa-clock me-1"></i> 3 min read</span>
+                        <a class="read-link" href="#" onclick="event.stopPropagation(); openArticle('guide-upload')">
+                            Read <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- GUIDE: Searching Documents -->
+                <div class="kb-card" data-category="guide"
+                     onclick="openArticle('guide-search')">
+                    <div class="kb-card-stripe stripe-guide"></div>
+                    <div class="kb-card-body">
+                        <div class="kb-card-category cat-guide">
+                            <i class="fas fa-book me-1"></i> Guide
+                        </div>
+                        <div class="kb-card-title">
+                            Searching &amp; Filtering Documents
+                        </div>
+                        <div class="kb-card-excerpt">
+                            Learn how to use multi-keyword search, date filters, classification filters, and admin-only org filters to find documents quickly.
+                        </div>
+                    </div>
+                    <div class="kb-card-footer">
+                        <span><i class="fas fa-clock me-1"></i> 4 min read</span>
+                        <a class="read-link" href="#" onclick="event.stopPropagation(); openArticle('guide-search')">
+                            Read <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- GUIDE: Viewer Groups -->
+                <div class="kb-card" data-category="guide"
+                     onclick="openArticle('guide-viewer-groups')">
+                    <div class="kb-card-stripe stripe-guide"></div>
+                    <div class="kb-card-body">
+                        <div class="kb-card-category cat-guide">
+                            <i class="fas fa-book me-1"></i> Guide
+                        </div>
+                        <div class="kb-card-title">
+                            Understanding Viewer Groups
+                        </div>
+                        <div class="kb-card-excerpt">
+                            Explains the five viewer groups — All, Area Only, Office Only, Department Only, and Custom Group — and when to use each one.
+                        </div>
+                    </div>
+                    <div class="kb-card-footer">
+                        <span><i class="fas fa-clock me-1"></i> 5 min read</span>
+                        <a class="read-link" href="#" onclick="event.stopPropagation(); openArticle('guide-viewer-groups')">
+                            Read <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- GUIDE: Archiving -->
+                <div class="kb-card" data-category="guide"
+                     onclick="openArticle('guide-archive')">
+                    <div class="kb-card-stripe stripe-guide"></div>
+                    <div class="kb-card-body">
+                        <div class="kb-card-category cat-guide">
+                            <i class="fas fa-book me-1"></i> Guide
+                        </div>
+                        <div class="kb-card-title">
+                            Archiving &amp; Restoring Documents
+                        </div>
+                        <div class="kb-card-excerpt">
+                            How to archive documents you no longer need active, and how to restore them later. Covers who can archive and who can restore.
+                        </div>
+                    </div>
+                    <div class="kb-card-footer">
+                        <span><i class="fas fa-clock me-1"></i> 3 min read</span>
+                        <a class="read-link" href="#" onclick="event.stopPropagation(); openArticle('guide-archive')">
+                            Read <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- UPDATE: Org filter fix -->
+                <div class="kb-card" data-category="update"
+                     onclick="openArticle('update-org-filters')">
+                    <div class="kb-card-stripe stripe-update"></div>
+                    <div class="kb-card-body">
+                        <div class="kb-card-category cat-update">
+                            <i class="fas fa-bell me-1"></i> System Update
+                            <span class="badge-new">New</span>
+                        </div>
+                        <div class="kb-card-title">
+                            Improved Area / Office / Department Filters
+                        </div>
+                        <div class="kb-card-excerpt">
+                            Admin filters in All Records and Archived Files now correctly match a document's <em>target</em> org instead of the uploader's org.
+                        </div>
+                    </div>
+                    <div class="kb-card-footer">
+                        <span><i class="fas fa-calendar-alt me-1"></i> Mar 2026</span>
+                        <a class="read-link" href="#" onclick="event.stopPropagation(); openArticle('update-org-filters')">
+                            Read <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- UPDATE: Export for all users -->
+                <div class="kb-card" data-category="update"
+                     onclick="openArticle('update-export')">
+                    <div class="kb-card-stripe stripe-update"></div>
+                    <div class="kb-card-body">
+                        <div class="kb-card-category cat-update">
+                            <i class="fas fa-bell me-1"></i> System Update
+                            <span class="badge-new">New</span>
+                        </div>
+                        <div class="kb-card-title">
+                            Export Now Available for All Users
+                        </div>
+                        <div class="kb-card-excerpt">
+                            The Export Search Results button on My Documents is now available to all users, not just admins. Each user's export is scoped to their own files only.
+                        </div>
+                    </div>
+                    <div class="kb-card-footer">
+                        <span><i class="fas fa-calendar-alt me-1"></i> Mar 2026</span>
+                        <a class="read-link" href="#" onclick="event.stopPropagation(); openArticle('update-export')">
+                            Read <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- POLICY: Document Editing Permissions -->
+                <div class="kb-card" data-category="policy"
+                     onclick="openArticle('policy-edit-perms')">
+                    <div class="kb-card-stripe stripe-policy"></div>
+                    <div class="kb-card-body">
+                        <div class="kb-card-category cat-policy">
+                            <i class="fas fa-shield-alt me-1"></i> Policy
+                        </div>
+                        <div class="kb-card-title">
+                            Who Can Edit &amp; Archive Documents
+                        </div>
+                        <div class="kb-card-excerpt">
+                            Only the original uploader can edit a document's metadata. Admins can archive or restore any document but cannot edit content they don't own.
+                        </div>
+                    </div>
+                    <div class="kb-card-footer">
+                        <span><i class="fas fa-clock me-1"></i> 2 min read</span>
+                        <a class="read-link" href="#" onclick="event.stopPropagation(); openArticle('policy-edit-perms')">
+                            Read <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- TIP: Multi-keyword search -->
+                <div class="kb-card" data-category="tip"
+                     onclick="openArticle('tip-search-keywords')">
+                    <div class="kb-card-stripe stripe-tip"></div>
+                    <div class="kb-card-body">
+                        <div class="kb-card-category cat-tip">
+                            <i class="fas fa-lightbulb me-1"></i> Tip
+                        </div>
+                        <div class="kb-card-title">
+                            Search with Multiple Keywords
+                        </div>
+                        <div class="kb-card-excerpt">
+                            Separate up to 3 search terms with commas to narrow results by AND-matching all terms across title, description, and tags at once.
+                        </div>
+                    </div>
+                    <div class="kb-card-footer">
+                        <span><i class="fas fa-clock me-1"></i> 1 min read</span>
+                        <a class="read-link" href="#" onclick="event.stopPropagation(); openArticle('tip-search-keywords')">
+                            Read <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- TIP: DTS number -->
+                <div class="kb-card" data-category="tip"
+                     onclick="openArticle('tip-dts')">
+                    <div class="kb-card-stripe stripe-tip"></div>
+                    <div class="kb-card-body">
+                        <div class="kb-card-category cat-tip">
+                            <i class="fas fa-lightbulb me-1"></i> Tip
+                        </div>
+                        <div class="kb-card-title">
+                            Using DTS Numbers Effectively
+                        </div>
+                        <div class="kb-card-excerpt">
+                            Fill in the DTS No. field when uploading to make documents searchable by their official tracking number from the DTS portal.
+                        </div>
+                    </div>
+                    <div class="kb-card-footer">
+                        <span><i class="fas fa-clock me-1"></i> 1 min read</span>
+                        <a class="read-link" href="#" onclick="event.stopPropagation(); openArticle('tip-dts')">
+                            Read <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div><!-- /kb-grid -->
+
+            <div class="kb-empty d-none" id="kbEmpty">
+                <i class="fas fa-search text-muted"></i>
+                <div>No articles in this category yet.</div>
+            </div>
+
+        </div><!-- /page-body -->
+    </div><!-- /form-container -->
+
+    <!-- ── Article modal — uses the same .modal class as document-modal-fragment ── -->
+    <div id="kbModalOverlay" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:680px;" onclick="event.stopPropagation()">
+
+            <div class="modal-header" style="display:flex;align-items:flex-start;gap:1rem;">
+                <div id="kbModalIcon"
+                     style="width:2.5rem;height:2.5rem;border-radius:0.5rem;
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:1.1rem;color:white;flex-shrink:0;">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <h2 id="kbModalTitle" style="font-size:1rem;margin:0 0 0.2rem;font-weight:700;color:#1f2937;"></h2>
+                    <div id="kbModalMeta" style="font-size:0.72rem;color:#9ca3af;"></div>
+                </div>
+                <span class="close" onclick="closeArticle()" style="margin-left:auto;">&times;</span>
+            </div>
+
+            <div class="modal-body">
+                <div id="kbModalBody"
+                     style="font-size:0.85rem;color:#374151;line-height:1.7;"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+    // ── Tab filtering ──────────────────────────────────────────────
+    document.querySelectorAll('.kb-tab').forEach(tab => {
+        tab.addEventListener('click', function () {
+            document.querySelectorAll('.kb-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            const filter = this.dataset.filter;
+            let visible = 0;
+
+            document.querySelectorAll('.kb-card').forEach(card => {
+                const match = filter === 'all' || card.dataset.category === filter;
+                card.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+
+            document.getElementById('kbEmpty').classList.toggle('d-none', visible > 0);
+        });
+    });
+
+    // ── Close on backdrop click (same pattern as document-modal.js) ──
+    window.addEventListener('click', function (e) {
+        if (e.target === document.getElementById('kbModalOverlay')) closeArticle();
+    });
+
+    // ── Article content map ────────────────────────────────────────
+    const articles = {
+        'guide-upload': {
+            title : 'How to Upload a Document',
+            cat   : 'Guide',
+            icon  : 'stripe-guide',
+            meta  : '3 min read',
+            body  : `
+                <p>Uploading a document takes just a few steps. Navigate to <strong>Upload Document</strong> from the sidebar.</p>
+                <h5>Step 1 — Document Information</h5>
+                <ul>
+                    <li>Select a <strong>Document Classification</strong> (e.g. Memorandum, Letter).</li>
+                    <li>Enter a clear <strong>Document Title</strong>.</li>
+                    <li>Fill in the <strong>DTS No.</strong> if applicable — this makes the document searchable by its tracking number.</li>
+                    <li>Set the <strong>Document Date</strong> — the original date the document was created, not today's date.</li>
+                    <li>Add a <strong>Subject / Description</strong> to summarise the document's content.</li>
+                </ul>
+                <h5>Step 2 — Tags / Remarks</h5>
+                <p>Add comma-separated tags (up to 10). Tags make documents much easier to find later. Click popular tag suggestions to add them quickly.</p>
+                <h5>Step 3 — File Upload</h5>
+                <p>Click the upload box or drag and drop your file. Supported formats: PDF, Word, Excel, Text, JPG, PNG. Maximum size: <strong>100 MB</strong>.</p>
+                <h5>Step 4 — Viewer Group</h5>
+                <p>Choose who should be able to see the document. See the <em>Understanding Viewer Groups</em> article for a full explanation.</p>
+                <div class="tip-box">
+                    <i class="fas fa-lightbulb me-1" style="color:#d97706;"></i>
+                    <strong>Tip:</strong> Always double-check the viewer group before uploading — it cannot be changed to a different org tier after upload.
+                </div>
+            `
+        },
+        'guide-search': {
+            title : 'Searching & Filtering Documents',
+            cat   : 'Guide',
+            icon  : 'stripe-guide',
+            meta  : '4 min read',
+            body  : `
+                <p>The search bar on <strong>All Records</strong>, <strong>My Documents</strong>, and <strong>Archived Files</strong> works the same way across all three pages.</p>
+                <h5>Keyword Search</h5>
+                <p>Type any word and click Search. The system looks across <strong>title</strong>, <strong>description/subject</strong>, <strong>tags</strong>, and <strong>DTS number</strong>.</p>
+                <h5>Multiple Keywords</h5>
+                <p>Separate up to <strong>3 terms with commas</strong> to match documents that contain ALL of the terms. Example: <code>budget, 2024, finance</code>.</p>
+                <h5>Advanced Filters</h5>
+                <ul>
+                    <li><strong>Classification</strong> — narrow to a document type.</li>
+                    <li><strong>Uploaded By</strong> — filter by a specific user (All Records only).</li>
+                    <li><strong>Doc. Date From / To</strong> — filter by the document's official date range.</li>
+                    <li><strong>Custom Group</strong> — show only documents shared with a specific group.</li>
+                </ul>
+                <h5>Admin-only Filters</h5>
+                <p>Admins see three extra filters on All Records: <strong>Area</strong>, <strong>Office</strong>, and <strong>Department</strong>. These match against the document's <em>target</em> org (not the uploader's org).</p>
+                <h5>Pagination</h5>
+                <p>Results are paginated at 50 per page. All filter values are preserved as you navigate between pages — you won't lose your search.</p>
+            `
+        },
+        'guide-viewer-groups': {
+            title : 'Understanding Viewer Groups',
+            cat   : 'Guide',
+            icon  : 'stripe-guide',
+            meta  : '5 min read',
+            body  : `
+                <p>Every uploaded document is assigned a <strong>Viewer Group</strong> that controls who can see it on the All Records page.</p>
+                <h5>1. All</h5>
+                <p>Every logged-in user can see the document, regardless of their office or department.</p>
+                <h5>2. Area Only</h5>
+                <p>Only users whose office belongs to the same <strong>area</strong> as the document's target office can see it.</p>
+                <h5>3. Office Only</h5>
+                <p>Only users in the same <strong>office</strong> as the document's target office can see it.</p>
+                <h5>4. Department Only</h5>
+                <p>Only users who belong to the specified <strong>department</strong> within the target office can see it. If no department is specified, all departments in the target office can see it.</p>
+                <h5>5. Custom Group</h5>
+                <p>Only members of the selected <strong>custom viewer group</strong> can see the document. Custom groups are managed by admins under <em>Settings → Viewer Groups</em>.</p>
+                <div class="tip-box">
+                    <i class="fas fa-shield-alt me-1" style="color:#7c3aed;"></i>
+                    <strong>Admin note:</strong> When uploading as admin, you must also set a <em>Target Office</em> for Area / Office / Department groups. The system uses this — not your own profile — to determine visibility.
+                </div>
+            `
+        },
+        'guide-archive': {
+            title : 'Archiving & Restoring Documents',
+            cat   : 'Guide',
+            icon  : 'stripe-guide',
+            meta  : '3 min read',
+            body  : `
+                <p>Archiving moves a document out of the active <em>All Records</em> view without deleting it. Archived documents remain fully accessible via <strong>Archived Files</strong>.</p>
+                <h5>Who Can Archive</h5>
+                <p>The <strong>original uploader</strong> can archive their own documents. <strong>Admins</strong> can archive any document.</p>
+                <h5>Who Can Restore</h5>
+                <p>The same rules apply — the original uploader or any admin can restore an archived document back to active.</p>
+                <h5>How to Archive</h5>
+                <ol style="padding-left:1.25rem;">
+                    <li>Open the document details by clicking the <i class="fas fa-eye"></i> button.</li>
+                    <li>Click <strong>Archive</strong> in the modal footer.</li>
+                    <li>Confirm the action. The document immediately moves to Archived Files.</li>
+                </ol>
+                <h5>How to Restore</h5>
+                <ol style="padding-left:1.25rem;">
+                    <li>Navigate to <strong>Archived Files</strong> in the sidebar.</li>
+                    <li>Open the document and click <strong>Restore</strong>.</li>
+                    <li>Confirm — the document returns to All Records.</li>
+                </ol>
+                <div class="tip-box">
+                    <i class="fas fa-info-circle me-1" style="color:#d97706;"></i>
+                    Old document <strong>versions</strong> that have been replaced cannot be restored individually — only the current version of a document can be restored.
+                </div>
+            `
+        },
+        'update-org-filters': {
+            title : 'Improved Area / Office / Department Filters',
+            cat   : 'System Update',
+            icon  : 'stripe-update',
+            meta  : 'Released March 2026',
+            body  : `
+                <p>The admin filters on <strong>All Records</strong> and <strong>Archived Files</strong> have been corrected to match against a document's <em>target organisation</em> rather than the uploader's organisation.</p>
+                <h5>What Changed</h5>
+                <ul>
+                    <li>Filtering by <strong>Area</strong> now returns documents whose target area matches — regardless of which office uploaded them.</li>
+                    <li>Filtering by <strong>Office</strong> now returns documents whose target office matches.</li>
+                    <li>Filtering by <strong>Department</strong> now returns documents targeted at that specific department.</li>
+                </ul>
+                <h5>Why It Matters</h5>
+                <p>Previously, an admin uploading a document on behalf of Office B (from their own Office A account) would not appear when filtering by Office B. This is now fixed.</p>
+                <h5>What You Should Do</h5>
+                <p>No action required. If any of your saved searches looked incorrect before, re-run them — results should now be accurate.</p>
+            `
+        },
+        'update-export': {
+            title : 'Export Now Available for All Users',
+            cat   : 'System Update',
+            icon  : 'stripe-update',
+            meta  : 'Released March 2026',
+            body  : `
+                <p>The <strong>Export Search Results</strong> button on <strong>My Documents</strong> is now available to all logged-in users — not just administrators.</p>
+                <h5>What Changed</h5>
+                <p>The export button was previously hidden for non-admin users. It is now visible to everyone on the My Documents page.</p>
+                <h5>Scope of Exported Data</h5>
+                <p>Each user's export is scoped to their <em>own uploaded documents only</em>. You cannot export another user's documents through this feature.</p>
+                <h5>Export Format</h5>
+                <p>Exports are generated as <strong>.xlsx</strong> (Excel) files with columns for ID, Classification, Title, Description, Upload Date, and Tags. The filename includes a timestamp and record count.</p>
+            `
+        },
+        'policy-edit-perms': {
+            title : 'Who Can Edit & Archive Documents',
+            cat   : 'Policy',
+            icon  : 'stripe-policy',
+            meta  : '2 min read',
+            body  : `
+                <p>The following rules apply to document editing and archiving across the system.</p>
+                <h5>Editing Metadata</h5>
+                <p>Only the <strong>original uploader</strong> of a document can edit its metadata — title, description, classification, DTS number, document date, and tags. Admins cannot edit documents they do not own. If incorrect metadata needs to be corrected on another user's document, the admin must request the uploader to make the change, or re-upload the document.</p>
+                <h5>Uploading a New Version</h5>
+                <p>Only the original uploader can upload a new version of their document. This replaces the current version and archives the old one automatically.</p>
+                <h5>Archiving</h5>
+                <p>The original uploader <em>and</em> any admin can archive a document.</p>
+                <h5>Restoring</h5>
+                <p>The original uploader <em>and</em> any admin can restore an archived document.</p>
+                <div class="tip-box">
+                    <i class="fas fa-crown me-1" style="color:#92400e;"></i>
+                    <strong>Admin note:</strong> Target org (office / department) is set at upload time only and cannot be changed post-upload.
+                </div>
+            `
+        },
+        'tip-search-keywords': {
+            title : 'Search with Multiple Keywords',
+            cat   : 'Tip',
+            icon  : 'stripe-tip',
+            meta  : '1 min read',
+            body  : `
+                <p>The search box accepts <strong>up to 3 keywords separated by commas</strong>. All provided terms must match — meaning the results are narrowed, not broadened.</p>
+                <h5>Example</h5>
+                <p>Typing <code>memo, budget, 2024</code> will return documents whose title, description, or tags contain <em>all three</em> of those words.</p>
+                <h5>Single-term Search</h5>
+                <p>A single keyword (no comma) works as a broad contains match across title, subject, tags, and DTS number.</p>
+                <div class="tip-box">
+                    <i class="fas fa-lightbulb me-1" style="color:#d97706;"></i>
+                    Searches are case-insensitive. You can type <code>BUDGET</code>, <code>budget</code>, or <code>Budget</code> and get the same results.
+                </div>
+            `
+        },
+        'tip-dts': {
+            title : 'Using DTS Numbers Effectively',
+            cat   : 'Tip',
+            icon  : 'stripe-tip',
+            meta  : '1 min read',
+            body  : `
+                <p>The <strong>DTS No.</strong> field on the upload form links a document to its official entry in the Document Tracking System portal.</p>
+                <h5>Why Fill It In?</h5>
+                <p>Filling in the DTS number makes it searchable. If a colleague knows the DTS number of a document, they can search for it directly in the search box without knowing the title.</p>
+                <h5>Format</h5>
+                <p>There is no enforced format. Use the same reference number that appears in the DTS portal (e.g. <code>DTS-2024-00143</code>).</p>
+                <h5>When to Leave It Blank</h5>
+                <p>Not all documents go through the DTS portal. If a document has no tracking number, simply leave the field blank — it is not required.</p>
+            `
+        }
+    };
+
+    // ── Open modal ─────────────────────────────────────────────────
+    function openArticle(id) {
+        const art = articles[id];
+        if (!art) return;
+
+        const iconEl = document.getElementById('kbModalIcon');
+        iconEl.className = '';
+        iconEl.style.background = {
+            'stripe-guide'  : '#1d4ed8',
+            'stripe-update' : '#059669',
+            'stripe-policy' : '#7c3aed',
+            'stripe-tip'    : '#d97706'
+        }[art.icon] || '#6b7280';
+
+        const catIcons = {
+            'stripe-guide'  : 'fa-book',
+            'stripe-update' : 'fa-bell',
+            'stripe-policy' : 'fa-shield-alt',
+            'stripe-tip'    : 'fa-lightbulb'
+        };
+        iconEl.innerHTML = `<i class="fas ${catIcons[art.icon] || 'fa-file-alt'}"></i>`;
+
+        document.getElementById('kbModalTitle').textContent = art.title;
+        document.getElementById('kbModalMeta').innerHTML =
+            `<span class="me-2">${art.cat}</span><span><i class="fas fa-clock me-1"></i>${art.meta}</span>`;
+        document.getElementById('kbModalBody').innerHTML = art.body;
+
+        // Use display:block exactly like document-modal.js _show()
+        document.getElementById('kbModalOverlay').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    // ── Close modal ────────────────────────────────────────────────
+    function closeArticle() {
+        document.getElementById('kbModalOverlay').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeArticle();
+    });
+    </script>
+
+</div>
+</html>
+
+<!--
+  ════════════════════════════════════════════════════════════════════
+  NAV LINK — add this inside your layout/main-layout.html sidebar
+  where the other nav items are listed.
+
+  Match the pattern of your existing nav items, e.g.:
+
+    <li class="nav-item">
+        <a class="nav-link" th:href="@{/knowledge-base}"
+           th:classappend="${activePage == 'knowledge-base'} ? ' active'">
+            <i class="fas fa-book-open me-2"></i>
+            Knowledge Base
+        </a>
+    </li>
+
+  ════════════════════════════════════════════════════════════════════
+-->
